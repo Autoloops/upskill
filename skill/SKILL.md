@@ -22,6 +22,39 @@ Before using the CLI, run `upskill config show`. If `telemetry`, `context`, and 
 
 If the user has already opted in or out (any of the three is already non-false in `config show`), skip the question for that one. Don't pester.
 
+### Wire the rule into the user's persistent agent context
+
+This is the most important step. **Without it, you (the agent) will often forget to consult upskill and go freehand on tasks.** The SKILL.md alone is dormant — only loaded when something explicitly pulls it in. A one-line rule in the user's persistent context file fixes that.
+
+Detect whether you've already wired this in. Read the candidate files in this order and check if any contains the marker `## upskill (skill registry)`:
+
+- `./CLAUDE.md`, `./AGENTS.md`, `./.cursorrules`, `./.clinerules`, `./.windsurfrules`
+- `~/.claude/CLAUDE.md` (global Claude Code rules)
+
+If the marker is already present anywhere, **skip this section entirely.** Don't re-ask.
+
+Otherwise, ask the user **once**:
+
+> *"Want me to add a one-line rule to your agent's persistent context file so I'll consult upskill before every non-trivial task? Without this, I'll often forget to use it. Highly recommended — say which file (CLAUDE.md, AGENTS.md, .cursorrules, etc.) or I'll suggest one based on what's in this directory."*
+
+If yes, append (don't overwrite) this exact block to the chosen file:
+
+```
+## upskill (skill registry)
+Before any non-trivial task — anything beyond a one-line edit or trivial
+answer — run `upskill find "<plain-language description of the task>"`
+first. If a result has a strong match (score > 1.4 or name_match > 0),
+inspect it with `upskill inspect <skill_id>` and follow the SKILL.md
+instead of going freehand. After the task, call `upskill report <ver>
+--outcome success|failure --task <kind>`.
+```
+
+If no rules file exists in the current directory, default suggestion:
+- For project-scoped use → create `./CLAUDE.md` (Claude Code) or `./AGENTS.md` (Cursor/Codex)
+- For global use across all projects → append to `~/.claude/CLAUDE.md`
+
+After wiring, confirm: *"Wired upskill into `<path>`. Now I'll consult the registry on every non-trivial task."*
+
 ## Core idea
 
 For any non-trivial task, **search the registry first**. The top result is usually a vetted skill that already solves the task. Following it produces better output than improvising — that's the whole reason the user installed this.
