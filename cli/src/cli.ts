@@ -76,24 +76,54 @@ program
 
     if (telemetry === undefined) {
       if (opts.nonInteractive) throw new Error("--telemetry required in non-interactive mode");
-      telemetry = await askYesNo(
-        "Send anonymous skill outcomes (which skill, success/failure, error codes) back so the registry can rank skills better for everyone?\n  Benefit: every report you make ranks failed skills down and good skills up — for every agent everywhere.\n  What's sent: skill_id, success/failure flag, optional error code, task kind. Nothing identifying.\n  Off by default.",
-        false
-      );
+      console.log("");
+      console.log("─── Outcome telemetry (off by default) ───────────────────────────────");
+      console.log("What it does: each time your agent runs `upskill report`, it sends");
+      console.log("  the registry a single line saying whether the skill worked.");
+      console.log("What's sent: skill_id, outcome (success | failure | partial), an");
+      console.log("  optional 1-word error code (e.g. missing_dep:playwright), and a");
+      console.log("  task kind tag (e.g. webapp-testing). Nothing else.");
+      console.log("What's NOT sent: your install ID is not linked to outcomes; no file");
+      console.log("  paths, no command output, no prompts, no environment, no IP-level");
+      console.log("  identifiers beyond a TLS request.");
+      console.log("Why turn it on: failed skills rank down and good skills rank up for");
+      console.log("  every agent on every machine. The registry gets smarter the more");
+      console.log("  agents close the loop. You can flip it off any time.");
+      console.log("");
+      telemetry = await askYesNo("Enable outcome telemetry?", false);
     }
     if (context === undefined) {
       if (opts.nonInteractive) throw new Error("--context required in non-interactive mode");
-      context = await askYesNo(
-        "Enable auth-aware ranking? Sends the registry a list of which CLIs you have installed (git, gh, aws, kubectl, terraform, docker, ...) and which auth env-var NAMES are set (OPENAI_API_KEY, GITHUB_TOKEN, AWS_*, STRIPE_*, ...) so skills you can actually run surface first.\n  Benefit: AWS skills float to the top when you have aws+AWS_*; Stripe checkout outranks generic payment skills when STRIPE_SECRET_KEY is set.\n  What's sent: NAMES only — never values. No file contents, no shell history, nothing else.\n  Off by default.",
-        false
-      );
+      console.log("");
+      console.log("─── Share environment for better recommendations (off by default) ────");
+      console.log("What it does: with each `upskill find`, sends the registry a list of");
+      console.log("  CLIs you have installed (git, gh, aws, kubectl, terraform, docker,");
+      console.log("  playwright, ...) plus a list of environment-variable NAMES that are");
+      console.log("  set (OPENAI_API_KEY, GITHUB_TOKEN, AWS_ACCESS_KEY_ID, STRIPE_*, ...).");
+      console.log("  The registry uses this to recommend skills you can actually run.");
+      console.log("What's sent: NAMES only — never values. No file contents, no shell");
+      console.log("  history, no command output. The full pattern list is published at");
+      console.log("  github.com/Autoloops/upskill/blob/main/cli/src/env.ts");
+      console.log("Why turn it on: AWS deploy skills outrank generic ones when you have");
+      console.log("  aws + AWS_*; Stripe checkout outranks generic 'payment' skills when");
+      console.log("  STRIPE_SECRET_KEY is set. Recommendations match your real stack.");
+      console.log("");
+      context = await askYesNo("Share installed CLIs + env-var NAMES (never values)?", false);
     }
     if (submissions === undefined) {
       if (opts.nonInteractive) throw new Error("--submissions required in non-interactive mode");
-      submissions = await askYesNo(
-        "Enable the `upskill submit` command so your agent can publish skills it builds during a task?\n  Off by default; nothing publishes until you turn this on.",
-        false
-      );
+      console.log("");
+      console.log("─── Submit (off by default) ──────────────────────────────────────────");
+      console.log("What it does: turns on the `upskill submit` command, which lets your");
+      console.log("  agent publish a skill folder (a directory with a SKILL.md) to the");
+      console.log("  public registry. Your agent will always ask you before submitting.");
+      console.log("What's sent (only when YOU run submit): the skill folder's contents");
+      console.log("  (SKILL.md + companion files) plus the source GitHub URL if any.");
+      console.log("  Nothing is sent unless you explicitly run `upskill submit`.");
+      console.log("Why turn it on: useful only if you expect to publish skills. Most");
+      console.log("  users keep this off and turn it on the day they need it.");
+      console.log("");
+      submissions = await askYesNo("Enable upskill submit?", false);
     }
 
     cfg.telemetryEnabled = telemetry;
