@@ -1,6 +1,6 @@
 {
   "name": "@autoloops/upskill",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI for the autoloops upskill registry. Search, inspect, report, and submit agent skills from your shell.",
   "license": "MIT",
   "type": "module",

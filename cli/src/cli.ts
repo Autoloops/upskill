@@ -74,8 +74,8 @@ program
     if (telemetry === undefined) {
       if (opts.nonInteractive) throw new Error("--telemetry required in non-interactive mode");
       telemetry = await askYesNo(
-        "Allow this CLI to send anonymous skill outcomes (which skill, success/failure, error codes) so the registry can rank skills better?",
-        true
+        "Send anonymous skill outcomes (which skill, success/failure, error codes) back so the registry can rank skills better for everyone? Off by default.",
+        false
       );
     }
     if (submissions === undefined) {
