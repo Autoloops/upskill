@@ -29,15 +29,43 @@
 1. Open your favorite coding agent (Claude Code, Cursor, Cline, Codex). Paste this once:
 
 ```
-Set up upskill on this machine. Run `npm install -g @autoloops/upskill`,
-then `upskill install` and answer its two prompts (anonymous outcome telemetry,
-and whether to enable the `submit` command). After that, run
-`npx -y skills add Autoloops/upskill/skill` so I learn how to use the CLI.
-From then on, search the registry before non-trivial tasks, follow the top
-result, and report back what worked.
+Set up upskill on this machine. Do these steps in order, and ask me the three
+questions in plain English before applying any of them.
+
+A. Run `npm install -g @autoloops/upskill`, then `upskill install` (this writes
+   a defaults-off config — nothing is shared yet).
+
+B. Ask me each of these in turn, then apply my answer via `upskill config set
+   <key> true|false`:
+
+   1. "Want upskill to send back whether each skill worked for me, so failed
+      skills rank down and good ones rank up for everyone?
+      What's sent: skill_id, success/failure, optional error code, task kind.
+      Nothing identifying. Default: off."
+      → if yes:  upskill config set telemetry true
+
+   2. "Want upskill to share which CLIs you have installed and which auth
+      env-var NAMES are set (never values), so it can recommend skills you
+      can actually run on your stack?
+      What's sent: names like git/aws/kubectl/docker + OPENAI_API_KEY/
+      AWS_ACCESS_KEY_ID/STRIPE_SECRET_KEY (just the names, never values).
+      Default: off."
+      → if yes:  upskill config set context true
+
+   3. "Want to be able to publish skills you build during a task back to the
+      public registry? I'll always confirm with you before publishing
+      anything.
+      Default: off."
+      → if yes:  upskill config set submissions true
+
+C. Run `npx -y skills add Autoloops/upskill/skill` so I learn how to use the
+   CLI on every future task.
+
+From then on: search the registry before non-trivial tasks, follow the top
+result, and (if telemetry is on) report what worked.
 ```
 
-2. Prompt away! Your agent will now search the registry before any non-trivial task and follow the top-ranked skill instead of improvising.
+2. Answer the three questions when your agent asks. Done.
 
 <br/>
 
@@ -49,23 +77,33 @@ result, and report back what worked.
 npm install -g @autoloops/upskill
 ```
 
-**2. Run the one-time setup (consent prompts + machine UUID):**
+**2. Run the one-time setup (writes a defaults-off config — no prompts, nothing shared yet):**
 
 ```bash
 upskill install
 ```
 
 ```
-? Send anonymous skill outcomes back to help ranking?  (y/N)   [off by default]
-? Enable auth-aware ranking (sends env-var NAMES only)? (y/N)   [off by default]
-? Enable the `submit` command for publishing skills?    (y/N)   [off by default]
+Installed @ ~/.config/upskill/config.json.
 
-Saved to ~/.config/upskill/config.json — never asked again.
+Three opt-ins, all off:
+  telemetry    = false   # send {skill_id, success/failure, error_code} when the agent calls 'upskill report'
+  context      = false   # share installed-CLIs list + env-var NAMES (never values) for better-ranked search results
+  submissions  = false   # let the agent run 'upskill submit' to publish skills it builds
+
+Enable any later with:  upskill config set <key> true
+Inspect at any time:    upskill config show
 ```
 
-All three are off until you say yes. Out of the box, `upskill find` only sends your query — nothing else.
+**3. (Optional) opt into any of the three flywheels — read the explanation in [Privacy](#-privacy-nothing-is-sent-by-default) below first:**
 
-**3. Teach your agent how to use it:**
+```bash
+upskill config set telemetry true     # help rank skills for everyone
+upskill config set context true       # better-ranked recs for your stack
+upskill config set submissions true   # let your agent publish skills it builds
+```
+
+**4. Teach your agent how to use the CLI:**
 
 ```bash
 npx -y skills add Autoloops/upskill/skill

@@ -74,67 +74,16 @@ program
     let submissions = parseBool(opts.submissions);
     let context = parseBool(opts.context);
 
-    if (telemetry === undefined) {
-      if (opts.nonInteractive) throw new Error("--telemetry required in non-interactive mode");
-      console.log("");
-      console.log("─── Outcome telemetry (off by default) ───────────────────────────────");
-      console.log("What it does: each time your agent runs `upskill report`, it sends");
-      console.log("  the registry a single line saying whether the skill worked.");
-      console.log("What's sent: skill_id, outcome (success | failure | partial), an");
-      console.log("  optional 1-word error code (e.g. missing_dep:playwright), and a");
-      console.log("  task kind tag (e.g. webapp-testing). Nothing else.");
-      console.log("What's NOT sent: your install ID is not linked to outcomes; no file");
-      console.log("  paths, no command output, no prompts, no environment, no IP-level");
-      console.log("  identifiers beyond a TLS request.");
-      console.log("Why turn it on: failed skills rank down and good skills rank up for");
-      console.log("  every agent on every machine. The registry gets smarter the more");
-      console.log("  agents close the loop. You can flip it off any time.");
-      console.log("");
-      telemetry = await askYesNo("Enable outcome telemetry?", false);
-    }
-    if (context === undefined) {
-      if (opts.nonInteractive) throw new Error("--context required in non-interactive mode");
-      console.log("");
-      console.log("─── Share environment for better recommendations (off by default) ────");
-      console.log("What it does: with each `upskill find`, sends the registry a list of");
-      console.log("  CLIs you have installed (git, gh, aws, kubectl, terraform, docker,");
-      console.log("  playwright, ...) plus a list of environment-variable NAMES that are");
-      console.log("  set (OPENAI_API_KEY, GITHUB_TOKEN, AWS_ACCESS_KEY_ID, STRIPE_*, ...).");
-      console.log("  The registry uses this to recommend skills you can actually run.");
-      console.log("What's sent: NAMES only — never values. No file contents, no shell");
-      console.log("  history, no command output. The full pattern list is published at");
-      console.log("  github.com/Autoloops/upskill/blob/main/cli/src/env.ts");
-      console.log("Why turn it on: AWS deploy skills outrank generic ones when you have");
-      console.log("  aws + AWS_*; Stripe checkout outranks generic 'payment' skills when");
-      console.log("  STRIPE_SECRET_KEY is set. Recommendations match your real stack.");
-      console.log("");
-      context = await askYesNo("Share installed CLIs + env-var NAMES (never values)?", false);
-    }
-    if (submissions === undefined) {
-      if (opts.nonInteractive) throw new Error("--submissions required in non-interactive mode");
-      console.log("");
-      console.log("─── Submit (off by default) ──────────────────────────────────────────");
-      console.log("What it does: turns on the `upskill submit` command, which lets your");
-      console.log("  agent publish a skill folder (a directory with a SKILL.md) to the");
-      console.log("  public registry. Your agent will always ask you before submitting.");
-      console.log("What's sent (only when YOU run submit): the skill folder's contents");
-      console.log("  (SKILL.md + companion files) plus the source GitHub URL if any.");
-      console.log("  Nothing is sent unless you explicitly run `upskill submit`.");
-      console.log("Why turn it on: useful only if you expect to publish skills. Most");
-      console.log("  users keep this off and turn it on the day they need it.");
-      console.log("");
-      submissions = await askYesNo("Enable upskill submit?", false);
-    }
-
-    cfg.telemetryEnabled = telemetry;
-    cfg.submissionsEnabled = submissions;
-    cfg.contextEnabled = context;
+    // Apply explicit flags only. No interactive prompts — `upskill install`
+    // always writes a defaults-off config silently, then prints next steps.
+    // The agent (or human) opts into individual features by running
+    // `upskill config set <key> true` after asking the user in plain English.
+    cfg.telemetryEnabled = telemetry ?? false;
+    cfg.submissionsEnabled = submissions ?? false;
+    cfg.contextEnabled = context ?? false;
     cfg.cliVersion = cliVersion();
-    // Probe the local environment once at install time so subsequent find calls
-    // can downrank skills the user can't run (missing commands, missing auth
-    // env vars). Probe runs unconditionally; the snapshot is only SENT to the
-    // server when contextEnabled is true. Only NAMES are sent — no env values
-    // ever leave the machine.
+    // Probe the local environment once at install time. The snapshot is only
+    // SENT when contextEnabled is true. Only NAMES are sent — never values.
     cfg.environment = detectEnvironment();
     cfg.environmentRefreshedAt = new Date().toISOString();
     saveConfig(cfg);
@@ -142,22 +91,24 @@ program
     try {
       await registerInstall(
         { cfg, cliVersion: cliVersion() },
-        { telemetry_enabled: telemetry, submissions_enabled: submissions, platform: cfg.platform }
+        { telemetry_enabled: cfg.telemetryEnabled, submissions_enabled: cfg.submissionsEnabled, platform: cfg.platform }
       );
     } catch (err) {
       console.warn(`(register call failed: ${(err as Error).message} — your local config is saved; we'll register on the next call)`);
     }
 
     console.log("");
-    console.log("Setup complete.");
-    console.log(`  config: ${configPath()}`);
-    console.log(`  install id: ${cfg.installId}`);
-    console.log(`  telemetry: ${telemetry ? "enabled" : "disabled"}`);
-    console.log(`  context (auth-aware ranking): ${context ? "enabled" : "disabled"}`);
-    console.log(`  submissions: ${submissions ? "enabled" : "disabled"}`);
+    console.log(`Installed @ ${configPath()}.`);
     console.log("");
-    console.log("Try it:");
-    console.log('  upskill find "deploy a node app to AWS"');
+    console.log(`Three opt-ins, all off:`);
+    console.log(`  telemetry    = ${cfg.telemetryEnabled}    # send {skill_id, success/failure, error_code} when the agent calls 'upskill report'`);
+    console.log(`  context      = ${cfg.contextEnabled}    # share installed-CLIs list + env-var NAMES (never values) for better-ranked search results`);
+    console.log(`  submissions  = ${cfg.submissionsEnabled}    # let the agent run 'upskill submit' to publish skills it builds`);
+    console.log("");
+    console.log("Enable any later with:  upskill config set <key> true");
+    console.log("Inspect at any time:    upskill config show");
+    console.log("");
+    console.log(`Try it:  upskill find "deploy a node app to AWS"`);
   });
 
 // ---- find ---------------------------------------------------------------
