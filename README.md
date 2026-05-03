@@ -6,6 +6,20 @@
 
 Your agent picks the right vetted skill for your task and stack, then follows it. Works with Claude Code, Cursor, Codex, Cline, Windsurf, and any shell-capable coding agent.
 
+<br/>
+
+[![npm](https://img.shields.io/npm/v/@autoloops/upskill.svg?label=%40autoloops%2Fupskill&color=cb3837)](https://www.npmjs.com/package/@autoloops/upskill)
+&nbsp;
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+&nbsp;
+[![registry](https://img.shields.io/badge/registry-mcp.autoloops.ai-success)](https://mcp.autoloops.ai)
+&nbsp;
+[![skills](https://img.shields.io/badge/skills-10%2C000%2B-orange)](https://mcp.autoloops.ai)
+
+<br/>
+
+**Trusted skills from:** Anthropic · OpenAI · Microsoft · Cloudflare · Stripe · Mapbox · Clerk · Firecrawl · Vercel · Pulumi · Browserbase · Tavily · Tinybird · LangChain · Firebase · Trail of Bits
+
 </div>
 
 <br/>
@@ -21,24 +35,6 @@ output — it'll tell you which questions to ask me before we're done.
 ```
 
 Your agent installs the CLI, asks you three short opt-in questions, wires a one-line rule into your agent's persistent context (CLAUDE.md / AGENTS.md / .cursorrules / .windsurfrules / .clinerules), and from then on consults the registry before every non-trivial task.
-
-<br/>
-
-<div align="center">
-
-[![npm](https://img.shields.io/npm/v/@autoloops/upskill.svg?label=%40autoloops%2Fupskill&color=cb3837)](https://www.npmjs.com/package/@autoloops/upskill)
-&nbsp;
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-&nbsp;
-[![registry](https://img.shields.io/badge/registry-mcp.autoloops.ai-success)](https://mcp.autoloops.ai)
-&nbsp;
-[![skills](https://img.shields.io/badge/skills-10%2C000%2B-orange)](https://mcp.autoloops.ai)
-
-<br/>
-
-**Trusted skills from:** Anthropic · OpenAI · Microsoft · Cloudflare · Stripe · Mapbox · Clerk · Firecrawl · Vercel · Pulumi · Browserbase · Tavily · Tinybird · LangChain · Firebase · Trail of Bits
-
-</div>
 
 <br/>
 
