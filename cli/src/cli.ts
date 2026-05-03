@@ -51,8 +51,9 @@ program
   .description("Set up this CLI: pick consent options and register your install.")
   .option("--telemetry <bool>", "skip the prompt and set telemetry up-front (true/false)")
   .option("--submissions <bool>", "skip the prompt and set submissions up-front (true/false)")
+  .option("--context <bool>", "skip the prompt and set auth-aware ranking up-front (true/false)")
   .option("--non-interactive", "fail if any required answer is missing instead of prompting")
-  .action(async (opts: { telemetry?: string; submissions?: string; nonInteractive?: boolean }) => {
+  .action(async (opts: { telemetry?: string; submissions?: string; context?: string; nonInteractive?: boolean }) => {
     const cfg = loadOrCreate();
     if (configExists()) {
       console.log(`Existing config at ${configPath()}`);
@@ -60,6 +61,7 @@ program
       console.log(`  serverUrl: ${cfg.serverUrl}`);
       console.log(`  telemetry: ${cfg.telemetryEnabled}`);
       console.log(`  submissions: ${cfg.submissionsEnabled}`);
+      console.log(`  context: ${cfg.contextEnabled ?? false}`);
     }
     const parseBool = (v: string | undefined): boolean | undefined => {
       if (v === undefined) return undefined;
@@ -70,28 +72,39 @@ program
     };
     let telemetry = parseBool(opts.telemetry);
     let submissions = parseBool(opts.submissions);
+    let context = parseBool(opts.context);
 
     if (telemetry === undefined) {
       if (opts.nonInteractive) throw new Error("--telemetry required in non-interactive mode");
       telemetry = await askYesNo(
-        "Send anonymous skill outcomes (which skill, success/failure, error codes) back so the registry can rank skills better for everyone? Off by default.",
+        "Send anonymous skill outcomes (which skill, success/failure, error codes) back so the registry can rank skills better for everyone?\n  Benefit: every report you make ranks failed skills down and good skills up — for every agent everywhere.\n  What's sent: skill_id, success/failure flag, optional error code, task kind. Nothing identifying.\n  Off by default.",
+        false
+      );
+    }
+    if (context === undefined) {
+      if (opts.nonInteractive) throw new Error("--context required in non-interactive mode");
+      context = await askYesNo(
+        "Enable auth-aware ranking? Sends the registry a list of which CLIs you have installed (git, gh, aws, kubectl, terraform, docker, ...) and which auth env-var NAMES are set (OPENAI_API_KEY, GITHUB_TOKEN, AWS_*, STRIPE_*, ...) so skills you can actually run surface first.\n  Benefit: AWS skills float to the top when you have aws+AWS_*; Stripe checkout outranks generic payment skills when STRIPE_SECRET_KEY is set.\n  What's sent: NAMES only — never values. No file contents, no shell history, nothing else.\n  Off by default.",
         false
       );
     }
     if (submissions === undefined) {
       if (opts.nonInteractive) throw new Error("--submissions required in non-interactive mode");
       submissions = await askYesNo(
-        "Allow this CLI to publish skills via `upskill submit`?",
+        "Enable the `upskill submit` command so your agent can publish skills it builds during a task?\n  Off by default; nothing publishes until you turn this on.",
         false
       );
     }
 
     cfg.telemetryEnabled = telemetry;
     cfg.submissionsEnabled = submissions;
+    cfg.contextEnabled = context;
     cfg.cliVersion = cliVersion();
     // Probe the local environment once at install time so subsequent find calls
     // can downrank skills the user can't run (missing commands, missing auth
-    // env vars). Only NAMES are sent — no env values ever leave the machine.
+    // env vars). Probe runs unconditionally; the snapshot is only SENT to the
+    // server when contextEnabled is true. Only NAMES are sent — no env values
+    // ever leave the machine.
     cfg.environment = detectEnvironment();
     cfg.environmentRefreshedAt = new Date().toISOString();
     saveConfig(cfg);
@@ -110,6 +123,7 @@ program
     console.log(`  config: ${configPath()}`);
     console.log(`  install id: ${cfg.installId}`);
     console.log(`  telemetry: ${telemetry ? "enabled" : "disabled"}`);
+    console.log(`  context (auth-aware ranking): ${context ? "enabled" : "disabled"}`);
     console.log(`  submissions: ${submissions ? "enabled" : "disabled"}`);
     console.log("");
     console.log("Try it:");
@@ -136,10 +150,13 @@ program
       c.cfg.environmentRefreshedAt = new Date().toISOString();
       saveConfig(c.cfg);
     }
+    // Send the env snapshot only when the user opted into auth-aware ranking
+    // (cfg.contextEnabled). --no-env always wins as an explicit override.
+    const sendEnv = options.env !== false && c.cfg.contextEnabled === true;
     const result = await find(c, {
       query,
       limit: options.limit,
-      environment: options.env === false ? undefined : environment
+      environment: sendEnv ? environment : undefined
     });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
@@ -294,12 +311,13 @@ configCmd
 
 configCmd
   .command("set <key> <value>")
-  .description("Set a config field. Allowed keys: telemetry, submissions, server.")
+  .description("Set a config field. Allowed keys: telemetry, submissions, context, server.")
   .action((key: string, value: string) => {
     const cfg = loadOrCreate();
     const k = key.toLowerCase();
     if (k === "telemetry") cfg.telemetryEnabled = parseBoolStrict(value);
     else if (k === "submissions") cfg.submissionsEnabled = parseBoolStrict(value);
+    else if (k === "context") cfg.contextEnabled = parseBoolStrict(value);
     else if (k === "server" || k === "serverurl") cfg.serverUrl = value;
     else throw new Error(`unknown config key: ${key}`);
     saveConfig(cfg);

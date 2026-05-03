@@ -57,10 +57,13 @@ upskill install
 
 ```
 ? Send anonymous skill outcomes back to help ranking?  (y/N)   [off by default]
+? Enable auth-aware ranking (sends env-var NAMES only)? (y/N)   [off by default]
 ? Enable the `submit` command for publishing skills?    (y/N)   [off by default]
 
 Saved to ~/.config/upskill/config.json — never asked again.
 ```
+
+All three are off until you say yes. Out of the box, `upskill find` only sends your query — nothing else.
 
 **3. Teach your agent how to use it:**
 
@@ -96,9 +99,9 @@ The pattern is the same every time: **agent searches first, follows a battle-tes
 
 <br/>
 
-# 🎯 Auth-aware ranking (built in)
+# 🎯 Auth-aware ranking (opt-in)
 
-`upskill find` doesn't just keyword-match — it knows what's already on your machine. Because the CLI silently probes which CLIs you have installed (`git`, `gh`, `aws`, `kubectl`, `terraform`, `docker`, `playwright`, `psql`, …) and which auth env-vars you've already configured (`OPENAI_API_KEY`, `GITHUB_TOKEN`, `AWS_ACCESS_KEY_ID`, `STRIPE_*`, `DATABASE_URL`, …), **skills you can actually run get surfaced first.**
+`upskill find` can rank skills by what's already on your machine. With one toggle, the CLI tells the registry which CLIs you have installed (`git`, `gh`, `aws`, `kubectl`, `terraform`, `docker`, `playwright`, `psql`, …) and which auth env-vars you've configured (`OPENAI_API_KEY`, `GITHUB_TOKEN`, `AWS_ACCESS_KEY_ID`, `STRIPE_*`, `DATABASE_URL`, …) — and **skills you can actually run get surfaced first.**
 
 Concretely:
 
@@ -106,7 +109,13 @@ Concretely:
 - You don't have `terraform` → IaC-via-Terraform skills sink; CDK-based skills rise.
 - You have `STRIPE_SECRET_KEY` set → Stripe checkout skills outrank generic "payment" skills.
 
-Only **variable NAMES are ever sent — never values.** The probe runs locally, the registry uses the names to score skills, and your secrets never touch a network. ([see what the CLI actually sends →](./cli/src/env.ts))
+**Off by default.** Turn it on if you want the better ranking:
+
+```bash
+upskill config set context true
+```
+
+What gets sent: variable **NAMES** only (matching the published auth-pattern list in [cli/src/env.ts](./cli/src/env.ts)) plus the list of installed CLI commands. **Never values.** No file contents, no shell history, nothing else. The probe runs locally; nothing leaves the machine until you opt in.
 
 <br/>
 
@@ -204,24 +213,26 @@ The endgame: **the skill registry is to AI agents what package managers are to p
 
 # 🔒 Privacy: nothing is sent by default
 
-> **The flywheel is opt-in.** Out of the box, `upskill` sends as little as physically possible. No outcome data, no submissions, no identifying anything — until you say yes.
+> **Out of the box, `upskill` sends as little as physically possible.** No outcome data, no env probe, no submissions, no identifying anything — until you say yes.
 
 What runs without any consent:
 
-- `upskill find` — sends your query and your local env-var **NAMES** (never values; only names matching the public auth-pattern list in [env.ts](./cli/src/env.ts)) so auth-aware ranking can surface skills you can actually run.
+- `upskill find` — sends only your search query.
 - `upskill inspect` — fetches a SKILL.md and metadata. Same shape as `git clone` to GitHub.
 
-What's **opt-in**:
+What's **opt-in** (all default off):
 
-- 📈 **Outcome telemetry** (default off) — when your agent runs `upskill report`, it sends `{skill_id, success/failure, error_codes, task_kind}` so failed skills rank down and good skills rank up. Nothing identifying. **Why turn it on:** every report you contribute makes the next agent on every machine smarter. You get all the value of better rankings; you only opt in to also share the signal back.
-- ✏️ **Submit** (default off) — turns on `upskill submit` so your agent can publish skills it builds during a task. Off until you ask for it.
+- 📈 **Outcome telemetry** — when your agent runs `upskill report`, it sends `{skill_id, success/failure, error_codes, task_kind}` so failed skills rank down and good skills rank up. Nothing identifying. **Why turn it on:** every report you contribute makes the next agent on every machine smarter. You get all the value of better rankings; you only opt in to also share the signal back.
+- 🎯 **Auth-aware ranking** — sends a list of installed CLIs + auth env-var **NAMES** (never values) so skills you can actually run surface first. **Why turn it on:** AWS skills outrank generic ones when you have `aws` + `AWS_*`; Stripe skills outrank when `STRIPE_SECRET_KEY` is set. **What's not sent:** any value, any file, any shell history. Just names.
+- ✏️ **Submit** — turns on `upskill submit` so your agent can publish skills it builds during a task. Off until you ask for it.
 
 Toggle anytime:
 
 ```bash
-upskill config show                       # see current state
-upskill config set telemetry true         # join the flywheel
-upskill config set submissions true       # let your agent publish
+upskill config show                        # see current state
+upskill config set telemetry true          # join the flywheel
+upskill config set context true            # auth-aware ranking
+upskill config set submissions true        # let your agent publish
 ```
 
 Run your own registry server behind a firewall? Set `UPSKILL_URL` or `upskill config set server <url>`. Defaults to `https://mcp.autoloops.ai`.

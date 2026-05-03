@@ -10,6 +10,10 @@ export interface CliConfig {
   cliVersion: string;
   telemetryEnabled: boolean;
   submissionsEnabled: boolean;
+  /** Opt-in: send list of installed CLIs + auth env-var NAMES (never values)
+   *  with each `find` so the registry can surface skills you can actually run.
+   *  Default false — nothing leaves the machine until the user says yes. */
+  contextEnabled: boolean;
   platform: string;
   /** Cached environment snapshot from `upskill install` (or last `find`).
    *  Sent on every find call so the registry can rank skills by which deps
@@ -59,8 +63,9 @@ export function loadOrCreate(): CliConfig {
     serverUrl: DEFAULT_SERVER,
     installedAt: new Date().toISOString(),
     cliVersion: cliVersion(),
-    telemetryEnabled: true,
+    telemetryEnabled: false,
     submissionsEnabled: false,
+    contextEnabled: false,
     platform: platform()
   };
   saveConfig(cfg);
