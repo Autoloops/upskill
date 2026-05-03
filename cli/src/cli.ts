@@ -81,7 +81,11 @@ program
     cfg.telemetryEnabled = telemetry ?? false;
     cfg.submissionsEnabled = submissions ?? false;
     cfg.contextEnabled = context ?? false;
-    cfg.searchScopeRestricted = cfg.searchScopeRestricted ?? false;
+    // Default search scope is "verified" (most restrictive) — user has to
+    // explicitly opt UP into reviewed or community via `upskill config set
+    // search-scope reviewed|community` after install. Existing configs
+    // upgrading from <0.8 land here too.
+    cfg.searchScope = cfg.searchScope ?? "verified";
     cfg.cliVersion = cliVersion();
     // Probe the local environment once at install time. The snapshot is only
     // SENT when contextEnabled is true. Only NAMES are sent — never values.
@@ -99,11 +103,11 @@ program
     }
 
     console.log("");
-    console.log(`Installed @ ${configPath()}.  Four opt-ins, all off:`);
+    console.log(`Installed @ ${configPath()}.  Three privacy opt-ins (all off) + one search scope:`);
     console.log(`  telemetry      = ${cfg.telemetryEnabled}`);
     console.log(`  context        = ${cfg.contextEnabled}`);
     console.log(`  submissions    = ${cfg.submissionsEnabled}`);
-    console.log(`  search-scope   = ${cfg.searchScopeRestricted ? "verified+reviewed only" : "full registry"}`);
+    console.log(`  search-scope   = ${cfg.searchScope}   ${cfg.searchScope === "verified" ? "(default — vendor-official only)" : cfg.searchScope === "reviewed" ? "(verified + curated practitioners)" : "(everything in the registry)"}`);
     console.log("");
     console.log("─── If you're the AI agent that just ran this: ───────────────────────");
     console.log("Ask the user each of these three questions in plain English, then");
@@ -124,14 +128,18 @@ program
     console.log("    during a task? I'll always confirm before publishing. Default: off.\"");
     console.log("    → if yes:  upskill config set submissions true");
     console.log("");
-    console.log("4. \"Want to restrict every search to verified + reviewed repos only");
-    console.log("    (the curated ~3.2k skills), skipping the long tail of community");
-    console.log("    skills (~9.2k)? Verified = vendor-official (Anthropic, OpenAI,");
-    console.log("    Stripe, Cloudflare, Microsoft, Google Workspace, Sentry, Datadog,");
-    console.log("    Clerk, Vercel-Labs, Neon, ClickHouse, Sanity, etc.). Reviewed =");
-    console.log("    curated by recognized practitioners (obra/superpowers, gstack,");
-    console.log("    mattpocock, K-Dense-AI, etc.). Default: off (search everything).\"");
-    console.log("    → if yes:  upskill config set search-scope true");
+    console.log("4. \"Search scope: which trust tiers should `upskill find` look at?");
+    console.log("    The default is the strictest tier — you opt UP into looser ones.");
+    console.log("");
+    console.log("       a. verified   = vendor-official only (Anthropic, OpenAI, Stripe,");
+    console.log("                       Microsoft, Cloudflare, Sentry, Datadog, Clerk,");
+    console.log("                       Vercel-Labs, Neon, ClickHouse, Sanity, etc.) [DEFAULT]");
+    console.log("       b. reviewed   = verified + curated practitioners");
+    console.log("                       (obra/superpowers, garrytan/gstack, mattpocock,");
+    console.log("                       K-Dense-AI scientific skills, etc.)");
+    console.log("       c. community  = the full registry, every public submission\"");
+    console.log("");
+    console.log("    → upskill config set search-scope verified  (or reviewed | community)");
     console.log("");
     console.log("After the four questions:");
     console.log("");
@@ -179,8 +187,9 @@ program
   .option("--json", "emit machine-readable JSON instead of the table view")
   .option("--no-env", "skip sending the cached environment context (default sends it)")
   .option("--refresh-env", "re-probe the local environment now and persist before searching")
-  .option("--all", "override search-scope: include community skills even when restricted to verified+reviewed")
-  .action(async (queryParts: string[], options: { limit: number; json?: boolean; env?: boolean; refreshEnv?: boolean; all?: boolean }) => {
+  .option("--scope <tier>", "override the configured search scope for this call (verified | reviewed | community)")
+  .option("--all", "shortcut for --scope community")
+  .action(async (queryParts: string[], options: { limit: number; json?: boolean; env?: boolean; refreshEnv?: boolean; scope?: string; all?: boolean }) => {
     const c = ctx();
     const query = queryParts.join(" ").trim();
     if (!query) throw new Error("query is required");
@@ -194,12 +203,21 @@ program
     // Send the env snapshot only when the user opted into auth-aware ranking
     // (cfg.contextEnabled). --no-env always wins as an explicit override.
     const sendEnv = options.env !== false && c.cfg.contextEnabled === true;
-    // Apply the search-scope opt-in: if the user restricted searches to
-    // verified+reviewed, send `trust_level_min: "reviewed"` to the registry.
-    // --all is an explicit per-call override so the user can occasionally
-    // search the full registry without flipping the config.
-    const restrictScope = c.cfg.searchScopeRestricted === true && options.all !== true;
-    const filters = restrictScope ? { trust_level_min: "reviewed" as const } : undefined;
+    // Resolve the active scope in priority order: --all > --scope > config.
+    // Map the tier to the registry's trust_level_min filter:
+    //   verified  → keep verified + official
+    //   reviewed  → keep reviewed + verified + official
+    //   community → no filter (everything)
+    let scope: "verified" | "reviewed" | "community" = c.cfg.searchScope ?? "verified";
+    if (options.all) scope = "community";
+    else if (options.scope) {
+      const v = options.scope.toLowerCase();
+      if (v !== "verified" && v !== "reviewed" && v !== "community") {
+        throw new Error(`--scope must be one of: verified, reviewed, community (got "${options.scope}")`);
+      }
+      scope = v;
+    }
+    const filters = scope === "community" ? undefined : { trust_level_min: scope };
     const result = await find(c, {
       query,
       limit: options.limit,
@@ -366,7 +384,13 @@ configCmd
     if (k === "telemetry") cfg.telemetryEnabled = parseBoolStrict(value);
     else if (k === "submissions") cfg.submissionsEnabled = parseBoolStrict(value);
     else if (k === "context") cfg.contextEnabled = parseBoolStrict(value);
-    else if (k === "search-scope" || k === "scope") cfg.searchScopeRestricted = parseBoolStrict(value);
+    else if (k === "search-scope" || k === "scope") {
+      const v = value.toLowerCase();
+      if (v !== "verified" && v !== "reviewed" && v !== "community") {
+        throw new Error(`search-scope must be one of: verified, reviewed, community (got "${value}")`);
+      }
+      cfg.searchScope = v;
+    }
     else if (k === "server" || k === "serverurl") cfg.serverUrl = value;
     else throw new Error(`unknown config key: ${key}`);
     saveConfig(cfg);

@@ -20,8 +20,12 @@ Before using the CLI, run `upskill config show`. If `telemetry`, `context`, and 
 3. **Submissions** — *"Want to enable `upskill submit` so I can publish skills I build during a task? I'll always confirm before publishing. Default: off."*
    → if yes: `upskill config set submissions true`
 
-4. **Search scope** — *"Want to restrict every search to verified + reviewed repos only (the curated ~3.2k skills), skipping the long tail of community skills (~9.2k)? Verified = vendor-official; reviewed = curated by recognized practitioners. Default: off (search everything)."*
-   → if yes: `upskill config set search-scope true`
+4. **Search scope** — *"Which trust tier should I search by default? Three options, default is the strictest:*
+   - *`verified` — vendor-official only (Anthropic, OpenAI, Stripe, Microsoft, Cloudflare, Sentry, etc.). The default.*
+   - *`reviewed` — verified + curated practitioners (obra/superpowers, garrytan/gstack, mattpocock, etc.).*
+   - *`community` — the full registry, every public submission.*
+   *Pick a wider tier later if you want more breadth."*
+   → apply: `upskill config set search-scope verified|reviewed|community`
 
 If the user has already opted in or out (any of the three is already non-false in `config show`), skip the question for that one. Don't pester.
 

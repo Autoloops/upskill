@@ -14,11 +14,14 @@ export interface CliConfig {
    *  with each `find` so the registry can surface skills you can actually run.
    *  Default false — nothing leaves the machine until the user says yes. */
   contextEnabled: boolean;
-  /** Opt-in: restrict every `upskill find` to verified + reviewed repos only,
-   *  skipping the long tail of community skills. Recommended after a week of
-   *  use once the user has a feel for which tiers they trust. Default false
-   *  (search the full registry). */
-  searchScopeRestricted: boolean;
+  /** Trust tier the user wants `upskill find` to search by default.
+   *  - "verified"  → vendor-official only (Anthropic, OpenAI, Stripe, …)
+   *  - "reviewed"  → verified + curated practitioner repos (obra/superpowers, gstack, …)
+   *  - "community" → the full registry, every public submission
+   *  Default: "verified". The user opts UP into the looser tiers, never out
+   *  of the strict default by accident. Per-call override via `--scope <tier>`
+   *  or `--all`. */
+  searchScope: "verified" | "reviewed" | "community";
   platform: string;
   /** Cached environment snapshot from `upskill install` (or last `find`).
    *  Sent on every find call so the registry can rank skills by which deps
@@ -71,7 +74,7 @@ export function loadOrCreate(): CliConfig {
     telemetryEnabled: false,
     submissionsEnabled: false,
     contextEnabled: false,
-    searchScopeRestricted: false,
+    searchScope: "verified",
     platform: platform()
   };
   saveConfig(cfg);
