@@ -20,7 +20,13 @@
 
 <br/>
 
-10,000+ skills indexed from across the ecosystem — Anthropic, OpenAI, Microsoft, Cloudflare, Stripe, Mapbox, Clerk, Firecrawl, Vercel, Pulumi, Browserbase, and many more. One CLI, one skill, your agent picks the right tool before going freehand.
+**Your agent picks the right skill — you don't have to.**
+
+`upskill` is the always-fresh registry your AI agent searches before doing real work. You don't browse, you don't curate, you don't pick — your agent reads the task, queries the registry, gets back the top-ranked skill, and follows it. You just see the result.
+
+Every skill is LLM-vetted at index time — data exfiltration, credential theft, prompt-injection, typosquatted package installs, and look-alike domains get blocked before they're served to your agent. New skills are continuously ingested as they ship across GitHub, so what your agent sees today is fresher than anything in its training data.
+
+And the registry **gets smarter every time it's used.** When an agent finishes a task with `upskill report`, the skill ranks up or down for every other agent on every other machine. The skills that work float to the top; the ones that don't, sink. The longer you use it, the better it gets at recommending what works for your stack.
 
 <br/>
 
