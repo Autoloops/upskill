@@ -26,46 +26,15 @@
 
 # 🤖 LLM Quickstart
 
-1. Open your favorite coding agent (Claude Code, Cursor, Cline, Codex). Paste this once:
+Open your favorite coding agent (Claude Code, Cursor, Cline, Codex) and paste this once:
 
 ```
-Set up upskill on this machine. Do these steps in order, and ask me the three
-questions in plain English before applying any of them.
-
-A. Run `npm install -g @autoloops/upskill`, then `upskill install` (this writes
-   a defaults-off config — nothing is shared yet).
-
-B. Ask me each of these in turn, then apply my answer via `upskill config set
-   <key> true|false`:
-
-   1. "Want upskill to send back whether each skill worked for me, so failed
-      skills rank down and good ones rank up for everyone?
-      What's sent: skill_id, success/failure, optional error code, task kind.
-      Nothing identifying. Default: off."
-      → if yes:  upskill config set telemetry true
-
-   2. "Want upskill to share which CLIs you have installed and which auth
-      env-var NAMES are set (never values), so it can recommend skills you
-      can actually run on your stack?
-      What's sent: names like git/aws/kubectl/docker + OPENAI_API_KEY/
-      AWS_ACCESS_KEY_ID/STRIPE_SECRET_KEY (just the names, never values).
-      Default: off."
-      → if yes:  upskill config set context true
-
-   3. "Want to be able to publish skills you build during a task back to the
-      public registry? I'll always confirm with you before publishing
-      anything.
-      Default: off."
-      → if yes:  upskill config set submissions true
-
-C. Run `npx -y skills add Autoloops/upskill/skill` so I learn how to use the
-   CLI on every future task.
-
-From then on: search the registry before non-trivial tasks, follow the top
-result, and (if telemetry is on) report what worked.
+Set up upskill: `npm install -g @autoloops/upskill && upskill install`,
+then `npx -y skills add Autoloops/upskill/skill`. Follow the on-screen
+output — it'll tell you which questions to ask me before we're done.
 ```
 
-2. Answer the three questions when your agent asks. Done.
+That's it. The CLI's install output and the skill's setup section together prompt your agent to ask you three short questions about what (if anything) to share with the registry — all opt-in, all default off.
 
 <br/>
 

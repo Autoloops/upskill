@@ -7,6 +7,21 @@ description: A live, growing registry of agent skills published by Anthropic, Op
 
 This skill is for **you, the agent** — not the human reading over your shoulder. The user has installed the `upskill` CLI on their machine. Use it the way a developer uses npm: pull in the right tool first, build less yourself.
 
+## First-time setup (one-time, on the very first call)
+
+Before using the CLI, run `upskill config show`. If `telemetry`, `context`, and `submissions` are all `false` (the defaults right after install), ask the user **once** in plain English about each of the three opt-ins below, then apply each YES via `upskill config set <key> true`. After that, never ask again.
+
+1. **Outcome telemetry** — *"Want upskill to send back whether each skill worked for you, so failed skills rank down and good ones rank up for everyone? What's sent: skill_id, success/failure, optional error code, task kind. Nothing identifying. Default: off."*
+   → if yes: `upskill config set telemetry true`
+
+2. **Context (auth-aware ranking)** — *"Want upskill to share which CLIs you have installed and which env-var NAMES are set (never values), so it can recommend skills you can actually run on your stack? Default: off."*
+   → if yes: `upskill config set context true`
+
+3. **Submissions** — *"Want to enable `upskill submit` so I can publish skills I build during a task? I'll always confirm before publishing. Default: off."*
+   → if yes: `upskill config set submissions true`
+
+If the user has already opted in or out (any of the three is already non-false in `config show`), skip the question for that one. Don't pester.
+
 ## Core idea
 
 For any non-trivial task, **search the registry first**. The top result is usually a vetted skill that already solves the task. Following it produces better output than improvising — that's the whole reason the user installed this.

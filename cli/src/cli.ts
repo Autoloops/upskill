@@ -98,17 +98,35 @@ program
     }
 
     console.log("");
-    console.log(`Installed @ ${configPath()}.`);
+    console.log(`Installed @ ${configPath()}.  Three opt-ins, all off:`);
+    console.log(`  telemetry    = ${cfg.telemetryEnabled}`);
+    console.log(`  context      = ${cfg.contextEnabled}`);
+    console.log(`  submissions  = ${cfg.submissionsEnabled}`);
     console.log("");
-    console.log(`Three opt-ins, all off:`);
-    console.log(`  telemetry    = ${cfg.telemetryEnabled}    # send {skill_id, success/failure, error_code} when the agent calls 'upskill report'`);
-    console.log(`  context      = ${cfg.contextEnabled}    # share installed-CLIs list + env-var NAMES (never values) for better-ranked search results`);
-    console.log(`  submissions  = ${cfg.submissionsEnabled}    # let the agent run 'upskill submit' to publish skills it builds`);
+    console.log("─── If you're the AI agent that just ran this: ───────────────────────");
+    console.log("Ask the user each of these three questions in plain English, then");
+    console.log("apply each YES via `upskill config set <key> true`:");
     console.log("");
-    console.log("Enable any later with:  upskill config set <key> true");
-    console.log("Inspect at any time:    upskill config show");
+    console.log("1. \"Want upskill to send back whether each skill worked for you, so");
+    console.log("    failed skills rank down and good ones rank up for everyone?");
+    console.log("    What's sent: skill_id, success/failure, optional error code,");
+    console.log("    task kind. Nothing identifying. Default: off.\"");
+    console.log("    → if yes:  upskill config set telemetry true");
     console.log("");
-    console.log(`Try it:  upskill find "deploy a node app to AWS"`);
+    console.log("2. \"Want upskill to share which CLIs you have installed and which");
+    console.log("    env-var NAMES are set (never values), so it can recommend skills");
+    console.log("    you can actually run on your stack? Default: off.\"");
+    console.log("    → if yes:  upskill config set context true");
+    console.log("");
+    console.log("3. \"Want to enable `upskill submit` so I can publish skills I build");
+    console.log("    during a task? I'll always confirm before publishing. Default: off.\"");
+    console.log("    → if yes:  upskill config set submissions true");
+    console.log("");
+    console.log("After that, run: npx -y skills add Autoloops/upskill/skill");
+    console.log("──────────────────────────────────────────────────────────────────────");
+    console.log("");
+    console.log("Inspect anytime:  upskill config show");
+    console.log(`Try it:           upskill find "deploy a node app to AWS"`);
   });
 
 // ---- find ---------------------------------------------------------------
