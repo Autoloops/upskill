@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    background: #0a0a0a;
+  }
+  body {
+    @apply bg-ink text-fog-200 font-sans antialiased;
+    font-feature-settings: "ss01", "cv01", "cv11";
+  }
+  /* Selection in accent green so dragging across results feels like a terminal */
+  ::selection {
+    background: rgba(126, 231, 135, 0.3);
+    color: #f0f6fc;
+  }
+  /* Scrollbar — thin, dark, dev-tool feel */
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: #21262d; border-radius: 4px; border: 2px solid #0a0a0a; }
+  *::-webkit-scrollbar-thumb:hover { background: #30363d; }
+}
+
+@layer components {
+  /* Subtle textured background that gives the page atmosphere without
+     overpowering the content. Layered on the body element. */
+  .page-bg {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(126,231,135,0.06), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(120,140,255,0.05), transparent 60%),
+      #0a0a0a;
+  }
+
+  .container-tight {
+    @apply mx-auto w-full max-w-7xl px-6;
+  }
+
+  /* Pill / badge primitive — used for trust levels, tag chips */
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-2xs font-semibold uppercase tracking-micro;
+  }
+  .pill-accent { @apply bg-accent-muted text-accent border border-accent-border; }
+  .pill-purple { @apply bg-purple-muted text-purple; }
+  .pill-warn { @apply bg-warn-muted text-warn; }
+  .pill-bad { @apply bg-bad-muted text-bad; }
+  .pill-info { @apply bg-info-muted text-info; }
+  .pill-fog { @apply bg-ink-line text-fog-300 border border-ink-divider; }
+
+  /* Card — used for skill rows, panels */
+  .panel {
+    @apply rounded-xl border border-ink-line bg-ink-panel/60 backdrop-blur-sm transition-colors;
+  }
+  .panel-hover {
+    @apply hover:border-ink-divider hover:bg-ink-panel/80;
+  }
+
+  /* Mono inline for skill_id paths and code-y bits */
+  .mono {
+    @apply font-mono text-[12.5px] leading-relaxed;
+  }
+}

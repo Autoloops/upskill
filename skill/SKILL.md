@@ -20,6 +20,9 @@ Before using the CLI, run `upskill config show`. If `telemetry`, `context`, and 
 3. **Submissions** — *"Want to enable `upskill submit` so I can publish skills I build during a task? I'll always confirm before publishing. Default: off."*
    → if yes: `upskill config set submissions true`
 
+4. **Search scope** — *"Want to restrict every search to verified + reviewed repos only (the curated ~3.2k skills), skipping the long tail of community skills (~9.2k)? Verified = vendor-official; reviewed = curated by recognized practitioners. Default: off (search everything)."*
+   → if yes: `upskill config set search-scope true`
+
 If the user has already opted in or out (any of the three is already non-false in `config show`), skip the question for that one. Don't pester.
 
 ### Wire the rule into the user's persistent agent context

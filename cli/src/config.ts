@@ -14,6 +14,11 @@ export interface CliConfig {
    *  with each `find` so the registry can surface skills you can actually run.
    *  Default false — nothing leaves the machine until the user says yes. */
   contextEnabled: boolean;
+  /** Opt-in: restrict every `upskill find` to verified + reviewed repos only,
+   *  skipping the long tail of community skills. Recommended after a week of
+   *  use once the user has a feel for which tiers they trust. Default false
+   *  (search the full registry). */
+  searchScopeRestricted: boolean;
   platform: string;
   /** Cached environment snapshot from `upskill install` (or last `find`).
    *  Sent on every find call so the registry can rank skills by which deps
@@ -66,6 +71,7 @@ export function loadOrCreate(): CliConfig {
     telemetryEnabled: false,
     submissionsEnabled: false,
     contextEnabled: false,
+    searchScopeRestricted: false,
     platform: platform()
   };
   saveConfig(cfg);

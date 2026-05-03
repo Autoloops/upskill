@@ -81,6 +81,7 @@ program
     cfg.telemetryEnabled = telemetry ?? false;
     cfg.submissionsEnabled = submissions ?? false;
     cfg.contextEnabled = context ?? false;
+    cfg.searchScopeRestricted = cfg.searchScopeRestricted ?? false;
     cfg.cliVersion = cliVersion();
     // Probe the local environment once at install time. The snapshot is only
     // SENT when contextEnabled is true. Only NAMES are sent — never values.
@@ -98,10 +99,11 @@ program
     }
 
     console.log("");
-    console.log(`Installed @ ${configPath()}.  Three opt-ins, all off:`);
-    console.log(`  telemetry    = ${cfg.telemetryEnabled}`);
-    console.log(`  context      = ${cfg.contextEnabled}`);
-    console.log(`  submissions  = ${cfg.submissionsEnabled}`);
+    console.log(`Installed @ ${configPath()}.  Four opt-ins, all off:`);
+    console.log(`  telemetry      = ${cfg.telemetryEnabled}`);
+    console.log(`  context        = ${cfg.contextEnabled}`);
+    console.log(`  submissions    = ${cfg.submissionsEnabled}`);
+    console.log(`  search-scope   = ${cfg.searchScopeRestricted ? "verified+reviewed only" : "full registry"}`);
     console.log("");
     console.log("─── If you're the AI agent that just ran this: ───────────────────────");
     console.log("Ask the user each of these three questions in plain English, then");
@@ -122,11 +124,20 @@ program
     console.log("    during a task? I'll always confirm before publishing. Default: off.\"");
     console.log("    → if yes:  upskill config set submissions true");
     console.log("");
-    console.log("After the three questions:");
+    console.log("4. \"Want to restrict every search to verified + reviewed repos only");
+    console.log("    (the curated ~3.2k skills), skipping the long tail of community");
+    console.log("    skills (~9.2k)? Verified = vendor-official (Anthropic, OpenAI,");
+    console.log("    Stripe, Cloudflare, Microsoft, Google Workspace, Sentry, Datadog,");
+    console.log("    Clerk, Vercel-Labs, Neon, ClickHouse, Sanity, etc.). Reviewed =");
+    console.log("    curated by recognized practitioners (obra/superpowers, gstack,");
+    console.log("    mattpocock, K-Dense-AI, etc.). Default: off (search everything).\"");
+    console.log("    → if yes:  upskill config set search-scope true");
     console.log("");
-    console.log("4. Run:  npx -y skills add Autoloops/upskill/skill");
+    console.log("After the four questions:");
     console.log("");
-    console.log("5. ASK THE USER (this is the most important step — the SKILL.md alone");
+    console.log("5. Run:  npx -y skills add Autoloops/upskill/skill");
+    console.log("");
+    console.log("6. ASK THE USER (this is the most important step — the SKILL.md alone");
     console.log("   is dormant until something pulls it into context every turn):");
     console.log("");
     console.log("   \"Want me to add a one-line rule to your agent's persistent context");
@@ -168,7 +179,8 @@ program
   .option("--json", "emit machine-readable JSON instead of the table view")
   .option("--no-env", "skip sending the cached environment context (default sends it)")
   .option("--refresh-env", "re-probe the local environment now and persist before searching")
-  .action(async (queryParts: string[], options: { limit: number; json?: boolean; env?: boolean; refreshEnv?: boolean }) => {
+  .option("--all", "override search-scope: include community skills even when restricted to verified+reviewed")
+  .action(async (queryParts: string[], options: { limit: number; json?: boolean; env?: boolean; refreshEnv?: boolean; all?: boolean }) => {
     const c = ctx();
     const query = queryParts.join(" ").trim();
     if (!query) throw new Error("query is required");
@@ -182,10 +194,17 @@ program
     // Send the env snapshot only when the user opted into auth-aware ranking
     // (cfg.contextEnabled). --no-env always wins as an explicit override.
     const sendEnv = options.env !== false && c.cfg.contextEnabled === true;
+    // Apply the search-scope opt-in: if the user restricted searches to
+    // verified+reviewed, send `trust_level_min: "reviewed"` to the registry.
+    // --all is an explicit per-call override so the user can occasionally
+    // search the full registry without flipping the config.
+    const restrictScope = c.cfg.searchScopeRestricted === true && options.all !== true;
+    const filters = restrictScope ? { trust_level_min: "reviewed" as const } : undefined;
     const result = await find(c, {
       query,
       limit: options.limit,
-      environment: sendEnv ? environment : undefined
+      environment: sendEnv ? environment : undefined,
+      filters
     });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
@@ -340,13 +359,14 @@ configCmd
 
 configCmd
   .command("set <key> <value>")
-  .description("Set a config field. Allowed keys: telemetry, submissions, context, server.")
+  .description("Set a config field. Allowed keys: telemetry, submissions, context, search-scope, server.")
   .action((key: string, value: string) => {
     const cfg = loadOrCreate();
     const k = key.toLowerCase();
     if (k === "telemetry") cfg.telemetryEnabled = parseBoolStrict(value);
     else if (k === "submissions") cfg.submissionsEnabled = parseBoolStrict(value);
     else if (k === "context") cfg.contextEnabled = parseBoolStrict(value);
+    else if (k === "search-scope" || k === "scope") cfg.searchScopeRestricted = parseBoolStrict(value);
     else if (k === "server" || k === "serverurl") cfg.serverUrl = value;
     else throw new Error(`unknown config key: ${key}`);
     saveConfig(cfg);
