@@ -14,6 +14,9 @@ import {
 } from "./api.js";
 import { cliVersion, configExists, configPath, loadConfig, loadOrCreate, saveConfig } from "./config.js";
 import { detectEnvironment } from "./env.js";
+import { inspectSubmitFolder, sanitizeReportPayload, formatInspectionSummary, formatBytes } from "./safety.js";
+import { resolve as resolvePath } from "node:path";
+import { existsSync } from "node:fs";
 import { collectFolder, describeRelative, parseFrontmatter } from "./folder.js";
 
 const program = new Command();
@@ -315,7 +318,10 @@ program
     }
     const failureCodes = options.outcome === "success" ? [] : options.code ?? [];
     const workaroundCodes = options.workaround ?? [];
-    const result = await report(c, {
+    // Outbound payload sanitizer: every field is enum-checked or slug-clamped,
+    // and the serialized JSON is regex-scanned for any known secret pattern
+    // before send. If anything looks off, we abort here, never on the wire.
+    const sanitized = sanitizeReportPayload({
       skill_version_id: skillVersionId,
       outcome: options.outcome,
       agent: options.agent || "upskill",
@@ -323,6 +329,17 @@ program
       failure_codes: failureCodes,
       workaround_codes: workaroundCodes
     });
+    if (!sanitized.ok) {
+      console.error("upskill report: payload rejected by safety check, nothing was sent.");
+      for (const issue of sanitized.issues.filter((i) => i.severity === "reject")) {
+        console.error(`  ✗ ${issue.code}: ${issue.message}`);
+      }
+      process.exit(2);
+    }
+    for (const w of sanitized.issues.filter((i) => i.severity === "warn")) {
+      console.warn(`  ⚠ ${w.message}`);
+    }
+    const result = await report(c, sanitized.payload as Parameters<typeof report>[1]);
     console.log(`reported ${options.outcome} for ${skillVersionId} → ${result.feedback_id}`);
   });
 
@@ -333,12 +350,16 @@ program
   .description("Publish a skill. Pass a local folder containing SKILL.md, or a github URL.")
   .option("--ref <ref>", "git ref (only when submitting a github URL)", "main")
   .option("--license <license>", "license string (e.g. MIT)")
-  .action(async (pathOrUrl: string, options: { ref: string; license?: string }) => {
+  .option("--yes", "skip the dry-run preview and confirmation (after the first run)")
+  .option("--dry-run", "run all safety checks and print the manifest, but never upload")
+  .action(async (pathOrUrl: string, options: { ref: string; license?: string; yes?: boolean; dryRun?: boolean }) => {
     const c = ctx();
     if (!c.cfg.submissionsEnabled) {
       console.log("(submissions disabled — no-op. Re-enable with: upskill config set submissions true)");
       return;
     }
+    // GitHub-URL path: server-side ingest pulls the repo, so we don't run the
+    // local file scanner. Trust comes from the public commit + LLM review.
     if (/^https?:\/\/github\.com\//.test(pathOrUrl)) {
       const m = pathOrUrl.match(/^https?:\/\/github\.com\/([^/]+\/[^/]+?)(?:\.git)?(?:\/tree\/([^/]+)\/(.+))?\/?$/i);
       if (!m) throw new Error("could not parse github URL");
@@ -350,9 +371,32 @@ program
       return;
     }
 
-    // local folder
+    // ─── Local folder: every file passes through the safety pipeline ───────
+    const absPath = resolvePath(pathOrUrl);
+    if (!existsSync(absPath)) throw new Error(`folder not found: ${absPath}`);
+    const inspection = inspectSubmitFolder(absPath);
+    console.log(formatInspectionSummary(inspection));
+    if (!inspection.ok) {
+      console.error("\nupskill submit: aborted — fix the rejects above and try again.");
+      process.exit(2);
+    }
+    if (options.dryRun) {
+      console.log("\n(dry-run — nothing uploaded)");
+      return;
+    }
+    if (!options.yes) {
+      // First run prints the manifest above; ask for confirmation before send.
+      // Subsequent calls can pass --yes to skip.
+      console.log(`\nReady to upload ${inspection.files.length} files (${formatBytes(inspection.total_bytes)}) to the registry.`);
+      console.log(`Re-run with --yes to skip this confirmation, or --dry-run to inspect-only.`);
+      const ans = await ask("Continue? [y/N] ", "n");
+      if (!/^y(es)?$/i.test(ans.trim())) {
+        console.log("aborted.");
+        return;
+      }
+    }
+
     const folder = await collectFolder(pathOrUrl);
-    console.log(`packaging ${describeRelative(pathOrUrl)} → ${folder.files.length + 1} files, ${folder.totalBytes} bytes`);
     const fm = folder.frontmatter;
     const result = await submitInline(c, {
       name: fm.name,

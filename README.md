@@ -12,9 +12,9 @@ Your assistant picks the right vetted skill for any task — coding, slides, ema
 &nbsp;
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 &nbsp;
-[![registry](https://img.shields.io/badge/registry-mcp.autoloops.ai-success)](https://mcp.autoloops.ai)
+[![browse](https://img.shields.io/badge/browse-upskill.autoloops.ai-7ee787)](https://upskill.autoloops.ai)
 &nbsp;
-[![skills](https://img.shields.io/badge/skills-10%2C000%2B-orange)](https://mcp.autoloops.ai)
+[![skills](https://img.shields.io/badge/skills-10%2C000%2B-orange)](https://upskill.autoloops.ai/stats)
 
 <br/>
 
@@ -35,6 +35,48 @@ output — it'll tell you which questions to ask me before we're done.
 ```
 
 Your assistant installs the CLI, asks you three short opt-in questions, wires a one-line rule into its persistent context file (CLAUDE.md / AGENTS.md / .cursorrules / .windsurfrules / .clinerules), and from then on consults the registry before every non-trivial task — whether you're writing code, building a deck, processing files, querying Notion, or triaging your inbox.
+
+<br/>
+
+# 🔐 Security: nothing leaves your machine by default
+
+Three things on by default that protect you. Three opt-ins for everything else.
+No silent telemetry, no sneak data flows.
+
+**On by default**
+
+- **Verified-only search.** `upskill find` returns vendor-official skills only
+  (Anthropic, OpenAI, Stripe, Microsoft, Cloudflare, Google Workspace, Sentry,
+  Datadog, Clerk, Vercel-Labs, Neon, ClickHouse, Sanity, …). Opt up to
+  `reviewed` or `community` per machine.
+- **Version-pinned commits.** Every skill is tied to a specific public GitHub
+  commit hash. The bytes never change behind your back; the registry can't
+  push a new version onto your machine.
+- **Outbound payload scrubbing.** Every byte the CLI is about to send — `find`
+  queries, `report` payloads, `submit` folders — runs through a regex pass
+  that rejects known secret formats (AWS keys, GitHub/OpenAI/Anthropic/Stripe
+  tokens, JWTs, SSH keys, …). `submit` additionally refuses any folder with
+  `.env`, `*.pem`, `id_rsa`, `node_modules`, or files >1 MB. If something
+  trips the scrubber, the request never leaves your machine.
+
+**Off until you say yes**
+
+- **Outcome telemetry.** Sends `{skill_id, success/failure, error_code, task_kind}` after each task — nothing else, never identifying data, no link between your install ID and the outcome. Off until `upskill config set telemetry true`. Failed skills sink for everyone; good ones rank up.
+
+- **Local env sharing.** Sends installed-CLI list + auth env-var **NAMES** (`OPENAI_API_KEY`, `STRIPE_SECRET_KEY`, …) so search ranks skills you can actually run. Never values, ever; full pattern list in [`cli/src/env.ts`](./cli/src/env.ts). Off until `upskill config set context true`.
+
+- **Submit.** Enables the `upskill submit` command so your agent can publish a skill folder. Nothing publishes unless you explicitly run `upskill submit`, and your agent confirms first. Off until `upskill config set submissions true`.
+
+Toggle anytime:
+
+```bash
+upskill config show
+upskill config set telemetry|context|submissions true|false
+upskill config set search-scope verified|reviewed|community
+```
+
+Browse the live registry — every indexed skill, every trust tier, the verified
+vendor list — at **[upskill.autoloops.ai](https://upskill.autoloops.ai)**.
 
 <br/>
 
@@ -135,33 +177,6 @@ Every result your agent reads has a `match_reason` block:
 - **`installs`, `stars`** — popularity, tiebreaker only.
 
 A typical solid hit: `score > 1.4`, `name_match > 0` or (`text > 0.8` AND `vec > 0.4`).
-
-<br/>
-
-# 🔒 Privacy: nothing is sent by default
-
-Out of the box, `upskill` sends as little as physically possible. No outcome data, no env probe, no submissions, no identifying anything — until you say yes.
-
-What runs without consent:
-- `upskill find` — sends only your search query.
-- `upskill inspect` — fetches a SKILL.md (same shape as `git clone`).
-
-What's **opt-in** (all default off):
-
-- 📈 **Outcome telemetry** — when your agent runs `upskill report`, sends `{skill_id, success/failure, error_codes, task_kind}`. **What's not sent:** nothing identifying, no file paths, no command output.
-- 🎯 **Env-aware ranking** — sends installed-CLIs list + auth env-var **NAMES**. **What's not sent:** any value, any file, any shell history.
-- ✏️ **Submit** — turns on `upskill submit` so your agent can publish skills it builds. Off until you ask for it.
-
-Toggle anytime:
-
-```bash
-upskill config show
-upskill config set telemetry true
-upskill config set context true
-upskill config set submissions true
-```
-
-Run your own registry behind a firewall? Set `UPSKILL_URL` or `upskill config set server <url>`.
 
 <br/>
 

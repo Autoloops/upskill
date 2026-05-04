@@ -7,4 +7,3 @@ out/
 *.log
 .DS_Store
 .vercel
-*.tsbuildinfo
