@@ -112,12 +112,16 @@ async function getJson<T>(path: string): Promise<T> {
 export async function findSkills(opts: {
   query: string;
   limit?: number;
-  filters?: { trust_level?: TrustLevel[] };
+  filters?: { trust_level_min?: TrustLevel };
 }): Promise<{ results: SkillSummary[] }> {
+  // Website search bar searches the FULL registry by default. The backend
+  // defaults unfiltered requests to "verified" to protect older CLI clients;
+  // we explicitly send "community" (a no-op filter where every row passes)
+  // so visitors browsing the site see the full breadth of what's indexed.
   return postJson("/api/v1/find", {
     query: opts.query,
     limit: opts.limit ?? 30,
-    filters: opts.filters
+    filters: opts.filters ?? { trust_level_min: "community" }
   });
 }
 
