@@ -217,7 +217,12 @@ program
       }
       scope = v;
     }
-    const filters = scope === "community" ? undefined : { trust_level_min: scope };
+    // Always send an explicit trust_level_min, even for the "community" tier
+    // (which is a no-op filter where every row passes). The server defaults
+    // unfiltered requests to "verified" — that's the safe default for older
+    // CLIs (<0.9) that don't send filters at all. Sending "community"
+    // explicitly tells the server "I want the full registry."
+    const filters = { trust_level_min: scope };
     const result = await find(c, {
       query,
       limit: options.limit,
