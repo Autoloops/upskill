@@ -1,37 +1,14 @@
-<div align="center">
-  <h3>upskill</h3>
+<h1 align="center">upskill</h1>
 
-  <p>
-    <strong>The skill layer for AI agents.</strong><br />
-    Give your assistant proven playbooks before it starts real work.
-  </p>
-
-  <a href="https://www.npmjs.com/package/@autoloops/upskill"><img src="https://img.shields.io/npm/v/@autoloops/upskill.svg?label=npm&color=cb3837" alt="npm version"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
-  <a href="https://upskill.autoloops.ai"><img src="https://img.shields.io/badge/browse-upskill-7ee787" alt="Browse upskill"></a>
-  <a href="https://upskill.autoloops.ai/stats"><img src="https://img.shields.io/badge/skills-10%2C000%2B-orange" alt="10,000+ skills"></a>
-
+<p align="center">
+  <strong>The skill layer for AI agents.</strong>
   <br />
-  <br />
+  Give your assistant proven playbooks before it starts real work.
+</p>
 
-  <a href="#quickstart">Quickstart</a>
-  ·
-  <a href="#why-upskill">Why upskill</a>
-  ·
-  <a href="#examples">Examples</a>
-  ·
-  <a href="#trust-and-control">Trust</a>
-</div>
-
-```mermaid
-flowchart LR
-  A["Agent task<br/>Design a website for my AI startup"]
-  B["upskill<br/>finds a frontend design playbook"]
-  C["Better output<br/>Sharper hero, stronger layout, cleaner UI"]
-  A --> B --> C
-```
-
----
+<p align="center">
+  <img src="./assets/readme-flow.svg" alt="upskill turns a web design task into a better first draft by injecting the right playbook" width="880" />
+</p>
 
 ## What is upskill?
 
