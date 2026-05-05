@@ -1,8 +1,10 @@
 <div align="center">
-  <h1>upskill</h1>
+  <h3>upskill</h3>
 
-  <p><strong>The skill layer for AI agents.</strong></p>
-  <p>Give your assistant proven playbooks before it starts real work.</p>
+  <p>
+    <strong>The skill layer for AI agents.</strong><br />
+    Give your assistant proven playbooks before it starts real work.
+  </p>
 
   <a href="https://www.npmjs.com/package/@autoloops/upskill"><img src="https://img.shields.io/npm/v/@autoloops/upskill.svg?label=npm&color=cb3837" alt="npm version"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
@@ -21,24 +23,13 @@
   <a href="#trust-and-control">Trust</a>
 </div>
 
-<br />
-
-<table>
-  <tr>
-    <td width="33%">
-      <strong>1. Agent gets a task</strong><br />
-      <code>Design a website for my AI startup</code>
-    </td>
-    <td width="33%">
-      <strong>2. upskill finds the playbook</strong><br />
-      Visual direction, layout patterns, UX checklist
-    </td>
-    <td width="33%">
-      <strong>3. Agent executes better</strong><br />
-      Sharper hero, stronger layout, cleaner UI
-    </td>
-  </tr>
-</table>
+```mermaid
+flowchart LR
+  A["Agent task<br/>Design a website for my AI startup"]
+  B["upskill<br/>finds a frontend design playbook"]
+  C["Better output<br/>Sharper hero, stronger layout, cleaner UI"]
+  A --> B --> C
+```
 
 ---
 
