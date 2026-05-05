@@ -1,9 +1,9 @@
 <h1 align="center">upskill</h1>
 
 <p align="center">
-  <strong>The skill layer for AI agents.</strong>
+  <strong>Your AI agent works from memory. upskill makes it start from proven playbooks.</strong>
   <br />
-  Give your assistant proven playbooks before it starts real work.
+  The skill layer that routes agents to the right workflow before they start real work.
 </p>
 
 <p align="center">
@@ -19,11 +19,13 @@
 
 ## What is upskill?
 
-upskill helps AI assistants use the right skill before they start working.
+upskill helps AI assistants use the right skill before they start working. It is a free, MIT-licensed routing layer for skills: the agent describes the task, upskill finds the best playbook, and the agent follows it instead of guessing from memory.
 
 A skill is a proven playbook: instructions, examples, constraints, tools, and patterns for a specific kind of work. Instead of asking an agent to invent a pitch-deck structure, design system, inbox triage process, auth flow, research workflow, or browser automation script from memory, upskill finds the best existing playbook and puts it in context first.
 
 Use it for serious work across code, docs, slides, email, research, spreadsheets, browser tasks, design, data, auth, cloud, CRM, support, and automation.
+
+The expertise already exists: frontend design skills from Anthropic, implementation workflows from OpenAI, Stripe, Vercel, Microsoft, and others; curated practitioner skills from Garry Tan's `gstack` and `obra/superpowers`; and independent workflows from the community. The missing piece is routing the agent to the right one at the right time.
 
 ## Quickstart
 
@@ -45,17 +47,22 @@ upskill find "triage my inbox and surface what needs a reply today"
 
 AI agents are generalists. When they start from memory, they improvise.
 
+The frustrating part is not that the model is bad. It is that the right answer often already exists somewhere: a frontend design playbook, an auth implementation guide, a CSV parsing pattern, a research workflow, a spreadsheet cleanup recipe. Your agent just does not know to reach for it.
+
 | Work | Without upskill | With upskill |
 |---|---|---|
-| Data parsing | Writes a brittle parser | Uses the right library and edge-case checklist |
+| Landing pages | Generates a generic off-brand Tailwind hero | Follows a frontend design playbook for layout, typography, motion, and accessibility |
+| Clerk/auth | Skips session checks, callbacks, or JWT verification details | Follows a provider-specific auth flow with the expected edge cases |
+| CSV/data parsing | Reinvents half of `papaparse`, badly | Uses the right library and edge-case checklist |
 | Pitch decks | Produces a generic template | Follows a narrative arc and slide-quality rubric |
 | Email | Lists unread messages | Builds a prioritized action queue |
 | Research | Summarizes loosely | Produces a cited synthesis with gaps and sources |
-| Auth | Misses callbacks, scopes, or tokens | Follows a provider-specific flow |
 | UI | Generates generic layouts | Uses a design and component playbook |
 | Browser tasks | Clicks through fragile selectors | Uses a tested automation workflow |
 
 The result: fewer retries, less token waste, and better output on the first pass.
+
+The expertise exists. The routing does not. upskill adds that missing layer.
 
 ## Demo
 
@@ -127,6 +134,30 @@ upskill can surface a research workflow that separates claims from evidence, tra
 
 upskill can surface provider-specific setup guidance, expected env vars, scopes, callbacks, and implementation pitfalls before the assistant writes code.
 
+### "Design a landing page"
+
+upskill can surface a frontend design skill with layout, typography, visual hierarchy, motion, accessibility, and design-review constraints, so the assistant does not produce the same generic hero again.
+
+### "Automate a Google Workspace task"
+
+upskill can surface a workflow that knows the difference between Gmail, Calendar, Drive, Docs, Sheets, and the auth path each one needs.
+
+## Not just code
+
+upskill is for any serious agent work where there is a better playbook than winging it:
+
+- slides and pitch decks
+- email triage
+- Google Workspace workflows
+- Notion and knowledge-base queries
+- calendar automation
+- scientific writing
+- accessibility audits
+- malware and security analysis
+- sales and support playbooks
+- browser workflows
+- cloud, auth, and developer tools
+
 ## Trust and control
 
 upskill is designed so the user stays in control.
@@ -177,6 +208,8 @@ The core loop is intentionally simple:
 
 This is the important distinction: upskill is not trying to be another chat UI. It is a skill-selection layer that gives agents better context before execution.
 
+Think of it as mixture of experts at the agent layer: the model stays general, but the task gets routed to a specialized playbook before the agent acts.
+
 ## Security model
 
 upskill is designed around inspection, pinning, and small payloads.
@@ -193,6 +226,8 @@ upskill is designed around inspection, pinning, and small payloads.
 
 For untrusted or community skills, the registry can apply heavier review before promotion: dependency extraction, auth detection, env-var detection, dangerous command checks, network/secret access warnings, and LLM-assisted security review. The goal is not to pretend every public skill is safe. The goal is to surface trust, requirements, and warnings before an agent uses it.
 
+The review layer is built to catch practical problems agents are likely to miss: prompt injection, credential exfiltration, typosquatting, lookalike domains, hidden malicious instructions, unsafe shell patterns, destructive file operations, and suspicious network access. Examples include hidden HTML/script payloads, instructions that tell the agent to skip verification, packages that look like trusted dependencies, and commands that read secrets before making network calls. Some findings will be warnings rather than hard blocks because legitimate workflows can still contain risky-looking operations, such as deleting `node_modules` or calling a delete endpoint.
+
 ## Vetted, fresh, stack-aware
 
 Good recommendations need more than keyword search.
@@ -207,6 +242,15 @@ Good recommendations need more than keyword search.
 
 Example: if an agent has `gh` installed and GitHub auth available, a GitHub PR review skill that uses the GitHub CLI is a better recommendation than a generic code-review prompt. If the agent has `COMPOSIO_API_KEY`, broker-based Gmail or Slack skills become more useful than skills that require a manual OAuth setup.
 
+Concrete examples:
+
+- `AWS_ACCESS_KEY_ID` exists locally → AWS deployment and cloud-operation skills can rank higher.
+- `STRIPE_SECRET_KEY` exists locally → Stripe-specific checkout and webhook flows can rank higher.
+- `COMPOSIO_API_KEY` exists locally → Composio-backed Gmail, Slack, Notion, and calendar skills can rank higher.
+- `gh` is installed and authenticated → GitHub PR, issue, and repo-maintenance skills can rank higher.
+
+Only names are used for this matching. Values never leave your machine.
+
 ## Ranking signals
 
 Every result includes a match explanation so agents do not have to trust a black box.
@@ -214,8 +258,8 @@ Every result includes a match explanation so agents do not have to trust a black
 | Signal | Meaning |
 |---|---|
 | `name_match` | Query terms match the skill name. This is one of the strongest signals. |
-| `text` | Full-text keyword overlap over the skill name, description, tags, and indexed text. |
-| `vec` | Semantic/vector similarity when embeddings are available. Useful for paraphrases. |
+| `text` | Postgres full-text keyword overlap over the skill name, description, tags, and indexed text. |
+| `vec` | 1024-dim semantic/vector similarity when embeddings are available. Useful for paraphrases. |
 | `trust` | `verified` > `reviewed` > `community`. |
 | Environment fit | Required commands, package managers, runtimes, MCP servers, and env-var names match the agent's environment. |
 | Missing requirements | Missing auth, env vars, commands, or package managers reduce usefulness. |
@@ -224,6 +268,12 @@ Every result includes a match explanation so agents do not have to trust a black
 | Popularity | Installs, GitHub stars, forks, and freshness are tie-breakers, not the core ranking signal. |
 
 A strong hit usually has either a literal name match or a combination of high text relevance, semantic relevance, trust, and environment fit. The registry should explain why a skill ranked, not just return a mysterious score.
+
+Hybrid search matters because both extremes fail:
+
+- pure vector search can miss exact details like CLI flags, API names, env vars, and provider-specific terms
+- pure full-text search can miss intent when the user phrases the task differently from the skill
+- hybrid search catches both the specific words and the underlying task
 
 ## Privacy and data flow
 
@@ -306,6 +356,12 @@ Good skills are not clever prompts. They are reusable work patterns:
 - how to automate a browser workflow
 - how to research with citations
 - how to follow a product or design standard
+- how to run a Google Workspace workflow
+- how to automate calendar operations
+- how to write or review scientific work
+- how to run accessibility audits
+- how to follow a sales or support playbook
+- how to do malware or security analysis safely
 
 The goal is simple: every agent should start important work with the best available playbook.
 
