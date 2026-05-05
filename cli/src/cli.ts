@@ -22,7 +22,7 @@ import { collectFolder, describeRelative, parseFrontmatter } from "./folder.js";
 const program = new Command();
 program
   .name("upskill")
-  .description("Search, inspect, report on, and publish agent skills from the autoloops registry.")
+  .description("Search, inspect, report on, and publish agent skills.")
   .version(cliVersion(), "-v, --version");
 
 function ctx() {
@@ -38,13 +38,6 @@ async function ask(question: string, fallback: string): Promise<string> {
   } finally {
     rl.close();
   }
-}
-
-async function askYesNo(question: string, defaultYes: boolean): Promise<boolean> {
-  const suffix = defaultYes ? "[Y/n]" : "[y/N]";
-  const ans = (await ask(`${question} ${suffix} `, defaultYes ? "y" : "n")).toLowerCase();
-  if (ans === "" || ans === (defaultYes ? "y" : "n")) return defaultYes;
-  return ans === "y" || ans === "yes";
 }
 
 // ---- install ------------------------------------------------------------
@@ -78,9 +71,8 @@ program
     let context = parseBool(opts.context);
 
     // Apply explicit flags only. No interactive prompts — `upskill install`
-    // always writes a defaults-off config silently, then prints next steps.
-    // The agent (or human) opts into individual features by running
-    // `upskill config set <key> true` after asking the user in plain English.
+    // writes a defaults-off config and prints a compact summary. The README
+    // carries the agent-facing setup prompt.
     cfg.telemetryEnabled = telemetry ?? false;
     cfg.submissionsEnabled = submissions ?? false;
     cfg.contextEnabled = context ?? false;
@@ -106,78 +98,17 @@ program
     }
 
     console.log("");
-    console.log(`Installed @ ${configPath()}.  Three privacy opt-ins (all off) + one search scope:`);
+    console.log(`Upskill installed at ${configPath()}.`);
+    console.log("");
+    console.log("Current settings:");
     console.log(`  telemetry      = ${cfg.telemetryEnabled}`);
     console.log(`  context        = ${cfg.contextEnabled}`);
     console.log(`  submissions    = ${cfg.submissionsEnabled}`);
     console.log(`  search-scope   = ${cfg.searchScope}   ${cfg.searchScope === "verified" ? "(default — vendor-official only)" : cfg.searchScope === "reviewed" ? "(verified + curated practitioners)" : "(everything in the registry)"}`);
     console.log("");
-    console.log("─── If you're the AI agent that just ran this: ───────────────────────");
-    console.log("Ask the user each of these three questions in plain English, then");
-    console.log("apply each YES via `upskill config set <key> true`:");
-    console.log("");
-    console.log("1. \"Want upskill to send back whether each skill worked for you, so");
-    console.log("    failed skills rank down and good ones rank up for everyone?");
-    console.log("    What's sent: skill_id, success/failure, optional error code,");
-    console.log("    task kind. Nothing identifying. Default: off.\"");
-    console.log("    → if yes:  upskill config set telemetry true");
-    console.log("");
-    console.log("2. \"Want upskill to share which CLIs you have installed and which");
-    console.log("    env-var NAMES are set (never values), so it can recommend skills");
-    console.log("    you can actually run on your stack? Default: off.\"");
-    console.log("    → if yes:  upskill config set context true");
-    console.log("");
-    console.log("3. \"Want to enable `upskill submit` so I can publish skills I build");
-    console.log("    during a task? I'll always confirm before publishing. Default: off.\"");
-    console.log("    → if yes:  upskill config set submissions true");
-    console.log("");
-    console.log("4. \"Search scope: which trust tiers should `upskill find` look at?");
-    console.log("    The default is the strictest tier — you opt UP into looser ones.");
-    console.log("");
-    console.log("       a. verified   = vendor-official only (Anthropic, OpenAI, Stripe,");
-    console.log("                       Microsoft, Cloudflare, Sentry, Datadog, Clerk,");
-    console.log("                       Vercel-Labs, Neon, ClickHouse, Sanity, etc.) [DEFAULT]");
-    console.log("       b. reviewed   = verified + curated practitioners");
-    console.log("                       (obra/superpowers, garrytan/gstack, mattpocock,");
-    console.log("                       K-Dense-AI scientific skills, etc.)");
-    console.log("       c. community  = the full registry, every public submission\"");
-    console.log("");
-    console.log("    → upskill config set search-scope verified  (or reviewed | community)");
-    console.log("");
-    console.log("After the four questions:");
-    console.log("");
-    console.log("5. Run:  npx -y skills add Autoloops/upskill/skill");
-    console.log("");
-    console.log("6. ASK THE USER (this is the most important step — the SKILL.md alone");
-    console.log("   is dormant until something pulls it into context every turn):");
-    console.log("");
-    console.log("   \"Want me to add a one-line rule to your agent's persistent context");
-    console.log("    file so I'll consult upskill before every non-trivial task?");
-    console.log("    Without this, the skill exists locally but I'll often forget to use");
-    console.log("    it and just go freehand. Highly recommended.\"");
-    console.log("");
-    console.log("   If YES, locate the rules file in this order (use the first that");
-    console.log("   exists; ask the user which to use if multiple exist):");
-    console.log("     - ./CLAUDE.md, ./AGENTS.md, ./.cursorrules, ./.clinerules, ./.windsurfrules");
-    console.log("     - ~/.claude/CLAUDE.md (global Claude Code rules)");
-    console.log("   If none exists, ask the user which to create. Then APPEND this");
-    console.log("   exact block (don't overwrite the file; idempotent — skip if already");
-    console.log("   present):");
-    console.log("");
-    console.log("   ─── snip ───");
-    console.log("   ## upskill (skill registry)");
-    console.log("   Before any non-trivial task — anything beyond a one-line edit or");
-    console.log("   trivial answer — run `upskill find \"<plain-language description of");
-    console.log("   the task>\"` first. If a result has a strong match (score > 1.4 or");
-    console.log("   name_match > 0), inspect it with `upskill inspect <skill_id>` and");
-    console.log("   follow the SKILL.md instead of going freehand. After the task,");
-    console.log("   call `upskill report <ver> --outcome success|failure --task <kind>`.");
-    console.log("   ─── snip ───");
-    console.log("");
-    console.log("   Then confirm to the user: \"Wired upskill into <path>.\"");
-    console.log("──────────────────────────────────────────────────────────────────────");
-    console.log("");
-    console.log("Inspect anytime:  upskill config show");
+    console.log("Inspect anytime: upskill config show");
+    console.log("Change settings: upskill config set telemetry|context|submissions true|false");
+    console.log("Search scope:    upskill config set search-scope verified|reviewed|community");
     console.log(`Try it:           upskill find "deploy a node app to AWS"`);
   });
 

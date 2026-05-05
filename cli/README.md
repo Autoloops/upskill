@@ -1,13 +1,13 @@
 # @autoloops/upskill
 
-CLI for the [autoloops skill registry](https://mcp.autoloops.ai). Search, inspect, report on, and publish agent skills from your shell.
+CLI for Upskill. Search, inspect, report on, and publish agent skills from your shell.
 
 ```bash
 npm install -g @autoloops/upskill
 upskill install
 ```
 
-The `install` command asks two consent questions (telemetry, submissions), generates a per-machine UUID, and writes the answers to `~/.config/upskill/config.json`. The answers persist forever — never asked again, never sent to the server until you act.
+The `install` command writes a defaults-off local config to `~/.config/upskill/config.json`, registers the install if the server is reachable, and prints a short settings summary. It does not ask agent-facing setup questions or mutate assistant rule files.
 
 ## Commands
 
@@ -19,13 +19,16 @@ upskill report <ver> --outcome success|failure|partial [--code <c>] [--task <t>]
 upskill submit ./path/to/folder    # zip + upload an inline skill (folder must contain SKILL.md)
 upskill submit https://github.com/owner/repo/tree/main/skills/foo   # github locator
 upskill config show
-upskill config set telemetry|submissions|server <value>
+upskill config set telemetry|context|submissions true|false
+upskill config set search-scope verified|reviewed|community
+upskill config set server <url>
 ```
 
-`find` and `inspect` work without consent. `report` no-ops silently if telemetry is disabled. `submit` no-ops silently if submissions are disabled. Toggle either at any time:
+`find` and `inspect` work without opt-ins. `report` no-ops silently if telemetry is disabled. `submit` no-ops silently if submissions are disabled. Environment-aware ranking is disabled unless context sharing is enabled. Toggle settings at any time:
 
 ```bash
 upskill config set telemetry false
+upskill config set context true
 upskill config set submissions true
 ```
 
