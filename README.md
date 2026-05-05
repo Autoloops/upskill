@@ -1,163 +1,195 @@
-# Upskill
+<div align="center">
+  <img src="./web/app/icon.png" alt="Upskill logo" width="72" />
 
-**Your AI agent is dumb by default. Upskill makes it act like an expert.**
+  <h1>Upskill</h1>
 
-Stop your AI from reinventing work. Give it the best proven skill before it starts.
+  <p><strong>The skill layer for AI agents.</strong></p>
+  <p>Give your assistant proven playbooks before it starts real work.</p>
 
-Upskill helps AI assistants start from proven playbooks, workflows, and patterns instead of memory. Use it for serious work across code, docs, slides, email, research, spreadsheets, browser tasks, design, data, auth, cloud, CRM, support, and automation.
+  <a href="https://www.npmjs.com/package/@autoloops/upskill"><img src="https://img.shields.io/npm/v/@autoloops/upskill.svg?label=npm&color=cb3837" alt="npm version"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="https://upskill.autoloops.ai"><img src="https://img.shields.io/badge/browse-upskill-7ee787" alt="Browse Upskill"></a>
+  <a href="https://upskill.autoloops.ai/stats"><img src="https://img.shields.io/badge/skills-10%2C000%2B-orange" alt="10,000+ skills"></a>
 
-## Install in one paste
+  <br />
+  <br />
 
-Paste this into Claude Code, Cursor, Codex, Cline, Windsurf, or any shell-capable AI assistant: `Install Upskill for this assistant: run npm install -g @autoloops/upskill && upskill install; ask me four setup choices before changing config: telemetry on/off, local context/env-var names on/off, submissions on/off, and search scope verified/reviewed/community; apply my answers with upskill config set; run npx -y skills add Autoloops/upskill/skill; ask before adding the persistent rule; if I say yes, append the Upskill rule to CLAUDE.md, AGENTS.md, .cursorrules, .clinerules, .windsurfrules, or ~/.claude/CLAUDE.md without overwriting anything.`
+  <a href="#quickstart">Quickstart</a>
+  ·
+  <a href="#why-upskill">Why Upskill</a>
+  ·
+  <a href="#examples">Examples</a>
+  ·
+  <a href="#trust-and-control">Trust</a>
+</div>
 
-That is the setup: install the CLI, choose privacy settings, add the assistant skill, and optionally add one persistent rule so your assistant remembers to use Upskill before non-trivial work.
+<br />
 
-## Your AI keeps starting from scratch
+<table>
+  <tr>
+    <td width="33%">
+      <strong>1. Agent gets a task</strong><br />
+      <code>Make me a 12-slide investor deck</code>
+    </td>
+    <td width="33%">
+      <strong>2. Upskill finds the playbook</strong><br />
+      Pitch deck structure, PPTX rules, design checklist
+    </td>
+    <td width="33%">
+      <strong>3. Agent executes better</strong><br />
+      Editable deck, tighter story, cleaner slides
+    </td>
+  </tr>
+</table>
 
-AI agents are generalists. When they start from memory, they improvise:
+---
 
-- Generic pitch decks with weak narrative and stock structure.
-- Shallow email triage that leaves you reading everything anyway.
-- Bad spreadsheet and CSV parsing that breaks on real data.
-- Broken auth flows with missing callbacks, scopes, or token handling.
-- Poor UI and design that looks like every other AI-generated page.
-- Weak research summaries with no synthesis or source discipline.
-- Fragile browser automation that works once and then fails.
-- Messy code that reinvents libraries, workflows, and patterns that already exist.
+## What is Upskill?
 
-Upskill changes the starting point. Before the assistant acts, it finds the best playbook for the task and injects it into context.
+Upskill helps AI assistants use the right skill before they start working.
 
-## Before / After
+A skill is a proven playbook: instructions, examples, constraints, tools, and patterns for a specific kind of work. Instead of asking an agent to invent a pitch-deck structure, design system, inbox triage process, auth flow, research workflow, or browser automation script from memory, Upskill finds the best existing playbook and puts it in context first.
 
-### Data parsing
+Use it for serious work across code, docs, slides, email, research, spreadsheets, browser tasks, design, data, auth, cloud, CRM, support, and automation.
 
-**Prompt:** `Build CSV parser`
+## Quickstart
 
-Without Upskill, your assistant may write this:
+Paste this into Claude Code, Cursor, Codex, Cline, Windsurf, or any shell-capable AI assistant:
 
-```ts
-export function parseCsv(input: string) {
-  return input
-    .trim()
-    .split("\n")
-    .map((row) => row.split(","));
-}
+```text
+Install Upskill for this assistant: run npm install -g @autoloops/upskill && upskill install; ask me four setup choices before changing config: telemetry on/off, local context/env-var names on/off, submissions on/off, and search scope verified/reviewed/community; apply my answers with upskill config set; run npx -y skills add Autoloops/upskill/skill; ask before adding the persistent rule; if I say yes, append the Upskill rule to CLAUDE.md, AGENTS.md, .cursorrules, .clinerules, .windsurfrules, or ~/.claude/CLAUDE.md without overwriting anything.
 ```
 
-That breaks on quoted commas, newlines inside cells, escaped quotes, encodings, large files, and half the CSVs people actually upload.
-
-With Upskill, the assistant starts from the right data-parsing playbook:
-
-```ts
-import Papa from "papaparse";
-
-export function parseCsv(input: string) {
-  const result = Papa.parse(input, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: (header) => header.trim()
-  });
-
-  if (result.errors.length) {
-    throw new Error(result.errors.map((error) => error.message).join("; "));
-  }
-
-  return result.data;
-}
-```
-
-The difference is not magic. The assistant got the right skill before it started.
-
-### Other serious work
-
-| Task | Without Upskill | With Upskill |
-|---|---|---|
-| Pitch deck | Generic template, weak story, default structure | Narrative playbook: hook, problem, solution, traction, ask |
-| Inbox triage | Long list of summaries | Prioritized action queue with urgency and sender signals |
-| Research | Loose summary | Cited synthesis with claims, sources, and gaps |
-| Notion or spreadsheet work | Guesses the structure | Query, extract, normalize, and summarize with a clear workflow |
-| Auth | Half-remembered JWT flow | Proven provider pattern with scopes, callbacks, and token handling |
-| UI/design | Messy HTML or generic Tailwind | Component and layout playbook matched to the job |
-| Browser tasks | Fragile click script | Tested browser workflow with selectors, waits, and screenshots |
-
-## What Upskill does
-
-Upskill gives your assistant a better starting point:
-
-1. Finds the best skill for the task.
-2. Lets the assistant inspect it before execution.
-3. Injects the proven workflow or pattern into context.
-4. Helps the assistant follow expert instructions instead of improvising.
-5. Reports outcomes only if you opted in.
-
-A skill is a proven playbook: instructions, examples, constraints, tools, and patterns that make an assistant better at a specific kind of work.
-
-## Usage
-
-Search for the right skill:
+For humans who want to run it directly:
 
 ```bash
+npm install -g @autoloops/upskill
+upskill install
 upskill find "triage my inbox and surface what needs a reply today"
-upskill find "build a clean 12 slide seed pitch deck"
-upskill find "parse uploaded CSV files with headers and quoted fields"
-upskill find "research competitors and produce a cited comparison"
 ```
 
-Inspect the result before using it:
+## Why Upskill?
 
-```bash
-upskill inspect <skill_id>
+AI agents are generalists. When they start from memory, they improvise.
+
+| Work | Without Upskill | With Upskill |
+|---|---|---|
+| Data parsing | Writes a brittle parser | Uses the right library and edge-case checklist |
+| Pitch decks | Produces a generic template | Follows a narrative arc and slide-quality rubric |
+| Email | Lists unread messages | Builds a prioritized action queue |
+| Research | Summarizes loosely | Produces a cited synthesis with gaps and sources |
+| Auth | Misses callbacks, scopes, or tokens | Follows a provider-specific flow |
+| UI | Generates generic layouts | Uses a design and component playbook |
+| Browser tasks | Clicks through fragile selectors | Uses a tested automation workflow |
+
+The result: fewer retries, less token waste, and better output on the first pass.
+
+## Demo
+
+**Task:** `Make me a polished 12-slide seed deck as an editable PPTX`
+
+Without Upskill, an assistant usually starts from a generic deck outline:
+
+```text
+1. Title
+2. Problem
+3. Solution
+4. Market
+5. Product
+6. Business model
+7. Team
+8. Ask
 ```
 
-Then have your assistant follow the inspected skill. Once installed with the assistant skill, this is the flow it will use automatically:
+The slides look familiar because the agent is guessing from memory: weak narrative, inconsistent visuals, no speaker notes, and no real investor-quality review pass.
+
+With Upskill, the assistant can start from a deck-writing and PPTX playbook:
+
+```text
+upskill find "create a polished seed pitch deck as an editable pptx"
+upskill inspect <pitch-deck-or-pptx-skill>
+```
+
+Then it follows the playbook:
+
+| Deck part | What changes with Upskill |
+|---|---|
+| Narrative | Hook, problem, insight, solution, proof, market, GTM, ask |
+| Slide quality | One idea per slide, stronger hierarchy, less filler text |
+| Visual system | Consistent type, spacing, color, charts, and layout rules |
+| PPTX output | Editable slides instead of a throwaway text outline |
+| Review pass | Checks story gaps, weak claims, crowded slides, and missing evidence |
+
+The difference is simple: the assistant got the right skill before it started.
+
+## How it works
+
+1. **Search** — the assistant runs `upskill find "<task>"`.
+2. **Inspect** — it reads the best matching skill before execution.
+3. **Apply** — it follows the proven playbook instead of going freehand.
+4. **Improve** — if you opted in, it reports whether the skill worked.
 
 ```bash
 upskill find "turn this customer feedback spreadsheet into the top 5 product themes"
 upskill inspect <skill_id>
 ```
 
-The assistant reads the skill, follows the playbook, and reports the outcome only if you enabled telemetry.
+Once the assistant skill is installed, your agent can do this automatically before non-trivial tasks.
 
-## Why it works
+## Examples
 
-Models are broad. Work is specific.
+### "Make me a 12-slide pitch deck"
 
-A general model can write code, draft emails, summarize docs, design slides, query tools, and automate a browser. But without the right task-specific context, it guesses. Upskill supplies that context first.
+Upskill can surface a deck-writing skill with a narrative structure, slide order, quality bar, and review checklist, so the assistant does not produce another generic template.
 
-Better context before execution means:
+### "Triage my inbox"
 
-- fewer mistakes
-- fewer retries
-- less token waste
-- more consistent output
-- work that follows proven patterns instead of vibes
+Upskill can surface an email triage playbook: classify action/FYI/noise, rank by sender and urgency signals, and return only what needs attention today.
+
+### "Research competitors"
+
+Upskill can surface a research workflow that separates claims from evidence, tracks sources, and produces a structured comparison instead of a loose summary.
+
+### "Add auth to this app"
+
+Upskill can surface provider-specific setup guidance, expected env vars, scopes, callbacks, and implementation pitfalls before the assistant writes code.
 
 ## Trust and control
 
-Upskill is designed so the user stays in control:
+Upskill is designed so the user stays in control.
 
-- Nothing sensitive leaves your machine by default.
-- Telemetry is off by default.
-- Local context sharing is off by default.
-- If enabled, local context sends env-var names only, never values.
-- Submissions are off by default.
-- Search defaults to verified sources.
-- The persistent assistant rule is added only after user approval.
-- Rules are appended, never overwritten.
+| Default | Behavior |
+|---|---|
+| Verified search | Searches trusted sources first |
+| Telemetry off | No outcome reporting unless enabled |
+| Context sharing off | No local environment context unless enabled |
+| Env values protected | Context sharing sends env-var names only, never values |
+| Submissions off | No publishing unless enabled and confirmed |
+| Rule approval | Persistent assistant rules are appended only after user approval |
 
-You can inspect settings anytime:
+Inspect settings anytime:
 
 ```bash
 upskill config show
 ```
 
-And change them anytime:
+Change settings anytime:
 
 ```bash
 upskill config set telemetry true
 upskill config set context true
 upskill config set submissions true
 upskill config set search-scope verified
+```
+
+## CLI
+
+```bash
+upskill find "build a clean 12 slide seed pitch deck"
+upskill find "parse uploaded CSV files with headers and quoted fields"
+upskill find "research competitors and produce a cited comparison"
+upskill inspect <skill_id>
+upskill config show
 ```
 
 ## Contribute skills
