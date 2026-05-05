@@ -7,6 +7,13 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/@autoloops/upskill"><img src="https://img.shields.io/npm/v/@autoloops/upskill.svg?label=npm&color=cb3837" alt="npm version"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="https://upskill.autoloops.ai"><img src="https://img.shields.io/badge/browse-upskill-7ee787" alt="Browse upskill"></a>
+  <a href="https://upskill.autoloops.ai/stats"><img src="https://img.shields.io/badge/skills-10%2C000%2B-orange" alt="10,000+ skills"></a>
+</p>
+
+<p align="center">
   <img src="./assets/readme-flow.svg" alt="upskill turns a web design task into a better first draft by injecting the right playbook" width="880" />
 </p>
 
