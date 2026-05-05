@@ -1,14 +1,12 @@
 <div align="center">
-  <img src="./web/app/icon.png" alt="Upskill logo" width="72" />
-
-  <h1>Upskill</h1>
+  <h1>upskill</h1>
 
   <p><strong>The skill layer for AI agents.</strong></p>
   <p>Give your assistant proven playbooks before it starts real work.</p>
 
   <a href="https://www.npmjs.com/package/@autoloops/upskill"><img src="https://img.shields.io/npm/v/@autoloops/upskill.svg?label=npm&color=cb3837" alt="npm version"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
-  <a href="https://upskill.autoloops.ai"><img src="https://img.shields.io/badge/browse-upskill-7ee787" alt="Browse Upskill"></a>
+  <a href="https://upskill.autoloops.ai"><img src="https://img.shields.io/badge/browse-upskill-7ee787" alt="Browse upskill"></a>
   <a href="https://upskill.autoloops.ai/stats"><img src="https://img.shields.io/badge/skills-10%2C000%2B-orange" alt="10,000+ skills"></a>
 
   <br />
@@ -16,7 +14,7 @@
 
   <a href="#quickstart">Quickstart</a>
   ·
-  <a href="#why-upskill">Why Upskill</a>
+  <a href="#why-upskill">Why upskill</a>
   ·
   <a href="#examples">Examples</a>
   ·
@@ -29,26 +27,26 @@
   <tr>
     <td width="33%">
       <strong>1. Agent gets a task</strong><br />
-      <code>Make me a 12-slide investor deck</code>
+      <code>Design a website for my AI startup</code>
     </td>
     <td width="33%">
-      <strong>2. Upskill finds the playbook</strong><br />
-      Pitch deck structure, PPTX rules, design checklist
+      <strong>2. upskill finds the playbook</strong><br />
+      Visual direction, layout patterns, UX checklist
     </td>
     <td width="33%">
       <strong>3. Agent executes better</strong><br />
-      Editable deck, tighter story, cleaner slides
+      Sharper hero, stronger layout, cleaner UI
     </td>
   </tr>
 </table>
 
 ---
 
-## What is Upskill?
+## What is upskill?
 
-Upskill helps AI assistants use the right skill before they start working.
+upskill helps AI assistants use the right skill before they start working.
 
-A skill is a proven playbook: instructions, examples, constraints, tools, and patterns for a specific kind of work. Instead of asking an agent to invent a pitch-deck structure, design system, inbox triage process, auth flow, research workflow, or browser automation script from memory, Upskill finds the best existing playbook and puts it in context first.
+A skill is a proven playbook: instructions, examples, constraints, tools, and patterns for a specific kind of work. Instead of asking an agent to invent a pitch-deck structure, design system, inbox triage process, auth flow, research workflow, or browser automation script from memory, upskill finds the best existing playbook and puts it in context first.
 
 Use it for serious work across code, docs, slides, email, research, spreadsheets, browser tasks, design, data, auth, cloud, CRM, support, and automation.
 
@@ -57,7 +55,7 @@ Use it for serious work across code, docs, slides, email, research, spreadsheets
 Paste this into Claude Code, Cursor, Codex, Cline, Windsurf, or any shell-capable AI assistant:
 
 ```text
-Install Upskill for this assistant: run npm install -g @autoloops/upskill && upskill install; ask me four setup choices before changing config: telemetry on/off, local context/env-var names on/off, submissions on/off, and search scope verified/reviewed/community; apply my answers with upskill config set; run npx -y skills add Autoloops/upskill/skill; ask before adding the persistent rule; if I say yes, append the Upskill rule to CLAUDE.md, AGENTS.md, .cursorrules, .clinerules, .windsurfrules, or ~/.claude/CLAUDE.md without overwriting anything.
+Install upskill for this assistant: run npm install -g @autoloops/upskill && upskill install; ask me four setup choices before changing config: telemetry on/off, local context/env-var names on/off, submissions on/off, and search scope verified/reviewed/community; apply my answers with upskill config set; run npx -y skills add Autoloops/upskill/skill; ask before adding the persistent rule; if I say yes, append the upskill rule to CLAUDE.md, AGENTS.md, .cursorrules, .clinerules, .windsurfrules, or ~/.claude/CLAUDE.md without overwriting anything.
 ```
 
 For humans who want to run it directly:
@@ -68,11 +66,11 @@ upskill install
 upskill find "triage my inbox and surface what needs a reply today"
 ```
 
-## Why Upskill?
+## Why upskill?
 
 AI agents are generalists. When they start from memory, they improvise.
 
-| Work | Without Upskill | With Upskill |
+| Work | Without upskill | With upskill |
 |---|---|---|
 | Data parsing | Writes a brittle parser | Uses the right library and edge-case checklist |
 | Pitch decks | Produces a generic template | Follows a narrative arc and slide-quality rubric |
@@ -88,7 +86,7 @@ The result: fewer retries, less token waste, and better output on the first pass
 
 **Task:** `Make me a polished 12-slide seed deck as an editable PPTX`
 
-Without Upskill, an assistant usually starts from a generic deck outline:
+Without upskill, an assistant usually starts from a generic deck outline:
 
 ```text
 1. Title
@@ -103,7 +101,7 @@ Without Upskill, an assistant usually starts from a generic deck outline:
 
 The slides look familiar because the agent is guessing from memory: weak narrative, inconsistent visuals, no speaker notes, and no real investor-quality review pass.
 
-With Upskill, the assistant can start from a deck-writing and PPTX playbook:
+With upskill, the assistant can start from a deck-writing and PPTX playbook:
 
 ```text
 upskill find "create a polished seed pitch deck as an editable pptx"
@@ -112,7 +110,7 @@ upskill inspect <pitch-deck-or-pptx-skill>
 
 Then it follows the playbook:
 
-| Deck part | What changes with Upskill |
+| Deck part | What changes with upskill |
 |---|---|
 | Narrative | Hook, problem, insight, solution, proof, market, GTM, ask |
 | Slide quality | One idea per slide, stronger hierarchy, less filler text |
@@ -140,23 +138,23 @@ Once the assistant skill is installed, your agent can do this automatically befo
 
 ### "Make me a 12-slide pitch deck"
 
-Upskill can surface a deck-writing skill with a narrative structure, slide order, quality bar, and review checklist, so the assistant does not produce another generic template.
+upskill can surface a deck-writing skill with a narrative structure, slide order, quality bar, and review checklist, so the assistant does not produce another generic template.
 
 ### "Triage my inbox"
 
-Upskill can surface an email triage playbook: classify action/FYI/noise, rank by sender and urgency signals, and return only what needs attention today.
+upskill can surface an email triage playbook: classify action/FYI/noise, rank by sender and urgency signals, and return only what needs attention today.
 
 ### "Research competitors"
 
-Upskill can surface a research workflow that separates claims from evidence, tracks sources, and produces a structured comparison instead of a loose summary.
+upskill can surface a research workflow that separates claims from evidence, tracks sources, and produces a structured comparison instead of a loose summary.
 
 ### "Add auth to this app"
 
-Upskill can surface provider-specific setup guidance, expected env vars, scopes, callbacks, and implementation pitfalls before the assistant writes code.
+upskill can surface provider-specific setup guidance, expected env vars, scopes, callbacks, and implementation pitfalls before the assistant writes code.
 
 ## Trust and control
 
-Upskill is designed so the user stays in control.
+upskill is designed so the user stays in control.
 
 | Default | Behavior |
 |---|---|
